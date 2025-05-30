@@ -1,0 +1,301 @@
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #000000;
+}
+
+/* Main navbar wrapper */
+.custom-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 0;
+  background: transparent;
+}
+
+/* Blurred layers behind navbar */
+.blur-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blur-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 20, 20, 0.2);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  animation: pulseBlur 8s infinite alternate;
+  opacity: 0.15;
+}
+
+@keyframes pulseBlur {
+  0% {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1.02);
+    opacity: 0.2;
+  }
+}
+
+/* Navbar content container */
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  font-family: 'Google Sans', sans-serif;
+  font-weight: 500;
+}
+
+/* Navbar brand (e.g., Google logo) */
+.navbar-brand {
+  color: white;
+  font-size: 20px;
+  text-decoration: none;
+}
+
+/* Navbar menu items */
+.navbar-nav {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-nav li a {
+  color: white;
+  text-decoration: none;
+  font-size: 15px;
+  transition: opacity 0.2s ease;
+}
+
+.navbar-nav li a:hover {
+  opacity: 0.75;
+}
+
+/* Optional: icons on the right */
+.navbar-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.navbar-icons i {
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+
+/* Remove side paddings and space everything to edge */
+.custom-navbar .navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px; /* Adjust as needed, reduce if needed */
+  margin: 0;
+  max-width: 100%;
+}
+
+/* Navbar Items */
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links .nav-item {
+  color: #c7baff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
+}
+
+.nav-links .nav-item:hover {
+  color: #ccc;
+}
+
+/* Icons on right */
+.nav-icons {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-icons i {
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.nav-icons i:hover {
+  color: #ccc;
+}
+
+/* Logo styling */
+.logo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+}
+
+.hero-section {
+  margin-top: 150px; /* pushes content below navbar */
+  padding: 60px 20px;
+  color: rgb(255, 255, 255);
+  font-family: 'Inter', sans-serif;
+}
+
+.hero-title {
+  font-size: 7.5em;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.hero-section p{
+    font-size: 35px;
+    color: #e0e0e0;
+}
+
+/* Medium screens (tablets) */
+@media (max-width: 992px) {
+  .hero-title {
+    font-size: 5em;
+  }
+  .hero-section p{
+    font-size: 25px;
+    color: #e0e0e0;
+}
+}
+
+/* Small screens (phones) */
+@media (max-width: 576px) {
+  .hero-title {
+    font-size: 2.5em;
+  }
+  .hero-section p{
+    font-size: 15px;
+    color: #e0e0e0;
+}
+}
+
+
+.hero-subtitle {
+  font-size: 24px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+
+/* Hide nav-links on small screens */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 64px; /* height of navbar approx */
+    left: 0;
+    right: 0;
+    background-color: #000000;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 24px;
+    z-index: 1100;
+  }
+
+  /* Show nav-links when active class added */
+  .nav-links.active {
+    display: flex;
+  }
+
+  /* Hide the discord icon to simplify UI */
+  .nav-icons i.bi-discord {
+    display: none;
+  }
+
+  /* Ensure the three dots icon looks clickable */
+  .nav-icons i.bi-three-dots-vertical {
+    cursor: pointer;
+  }
+}
+
+.modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      height: 500px;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(59, 59, 59, 0.6);
+      padding: 30px;
+      width: 500px;
+      max-width: 90%;
+      line-height: 1.6;
+      z-index: 1000;
+      overflow-y: auto;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; 
+    }
+
+    .blurred {
+        -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
+  transition: filter 0.3s ease;
+}
+
+.modal::-webkit-scrollbar {
+  width: 0px; /* Chrome, Safari */
+  background: transparent;
+}
+
+    .modal.active {
+      display: block;
+    }
+
+    .modal h2 {
+      color: #c7baff;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .modal p {
+      font-size: 15px;
+      color: #e0e0e0;
+    }
+
+    .modal a {
+      color: #ffffff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .modal .footer {
+      margin-top: 20px;
+      text-align: right;
+    }
+
+    .modal .footer button {
+      background: none;
+      border: none;
+      color: #b8a7ff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .modal .footer button:hover {
+      text-decoration: underline;
+    }
