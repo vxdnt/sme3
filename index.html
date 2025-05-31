@@ -27,7 +27,7 @@
   <div class="navbar-container">
     <div class="logo">Sortmyentries</div>
     <nav class="nav-links">
-      <a href="https://linktr.ee/sortmyentries" class="nav-item">Community Links</a>
+      <a href="https://www.beacons.ai/sortmyevents" class="nav-item">Community Links</a>
       <a href="https://www.sortmyevents.in" class="nav-item">Upcoming Events</a>
       <a href="#" class="nav-item" onclick=openModal()>About</a>
     </nav>
@@ -44,6 +44,21 @@
   <h1 class="hero-title">Introducing Sortmyentries</h1>
   <p class="hero-subtitle" style="color: #c7baff;">coming soon.</p>
 </section>
+
+<main>
+    <section style="height: 100vh;"></section> <!-- Spacer -->
+
+    <section class="video-section" id="videoSection">
+      <div class="glass-container">
+        <video id="mainVideo" autoplay loop muted playsinline>
+          <source src="vid.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </section>
+
+    <section style="height: 100vh;"></section> <!-- Spacer -->
+  </main>
 
 <div class="modal" id="flowModal">
     <h2>About Sortmyentries</h2>
@@ -93,6 +108,17 @@ document.addEventListener('click', (e) => {
   ) {
     navLinks.classList.remove('active');
   }
+});
+
+
+const video = document.getElementById('mainVideo');
+const body = document.body;
+
+// Play video on load
+window.addEventListener('DOMContentLoaded', () => {
+  video.play().catch(err => console.warn("Autoplay blocked:", err));
+  body.style.background = "#000"; // optional
+  trackVideoColors(); // if you have color tracking logic
 });
 
 
