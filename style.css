@@ -346,6 +346,11 @@ video {
 }
 
 @media (max-width: 768px) {
+
+  main {
+  height: 300px;
+}
+
   .video-section {
     flex-direction: column;
     padding: 10px 30px; /* still keep 30px top/bottom, less horizontal padding */
