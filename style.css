@@ -305,21 +305,24 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 50px;
-  height: 300px;
+  height: 500px;
+  overflow: hidden;
 }
 
 /* Glassmorphism Container */
+/* Video Section */
 .video-section {
   position: relative;
   width: 100vw;
   height: 80vh;
-  background: rgba(0, 0, 0, 0.3); /* Creamy transparent base */
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  padding: 30px 20px; /* 30px top & bottom, 20px left & right */
+  box-sizing: border-box; /* ensures padding is inside total height */
 }
 
 /* Glassmorphism Container */
@@ -329,11 +332,33 @@ main {
   background: rgba(9, 0, 42, 0.982);
   box-shadow: 0 0px 5px rgb(255, 255, 255);
   border-radius: 20px;
+  transition: all 0.3s ease;
+  margin-top: 30px;
+  margin-bottom: 30px;
 }
+
 
 /* Video Styling */
 video {
   width: 100%;
   display: block;
   border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  .video-section {
+    flex-direction: column;
+    padding: 10px 30px; /* still keep 30px top/bottom, less horizontal padding */
+  }
+
+  .glass-container {
+    width: 50%;
+    transform: rotate(-90deg);
+    margin: 30px 30px;
+  }
+
+  video {
+    width: 100%;
+    height: auto;
+  }
 }
