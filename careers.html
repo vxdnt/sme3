@@ -51,24 +51,37 @@
       <h1 class="display-5 fw-bold mb-4">Join SortMyEntries</h1>
       <p class="lead mb-4">We’re growing and looking for passionate people to join our team. Tell us about yourself.</p>
       <form action="https://formspree.io/f/your_form_id" method="POST">
-        <div class="mb-3 text-start">
-          <label for="name" class="form-label">Full Name</label>
-          <input type="text" class="form-control" name="name" id="name" required />
-        </div>
-        <div class="mb-3 text-start">
-          <label for="email" class="form-label">Email Address</label>
-          <input type="email" class="form-control" name="_replyto" id="email" required />
-        </div>
-        <div class="mb-3 text-start">
-          <label for="role" class="form-label">What role are you applying for?</label>
-          <input type="text" class="form-control" name="role" id="role" required />
-        </div>
-        <div class="mb-3 text-start">
-          <label for="message" class="form-label">Why do you want to join us?</label>
-          <textarea class="form-control" name="message" id="message" rows="5" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary px-4">Submit</button>
-      </form>
+  <div class="mb-3 text-start">
+    <label for="name" class="form-label">Full Name</label>
+    <input type="text" class="form-control" name="name" id="name" required />
+  </div>
+  <div class="mb-3 text-start">
+    <label for="email" class="form-label">Email Address</label>
+    <input type="email" class="form-control" name="_replyto" id="email" required />
+  </div>
+  <div class="mb-3 text-start">
+    <label for="role" class="form-label">Role you're applying for</label>
+    <select class="form-select" name="role" id="role" required>
+      <option value="" disabled selected>Select a role</option>
+      <option value="Frontend Developer">Frontend Developer</option>
+      <option value="Backend Developer">Backend Developer</option>
+      <option value="App Developer">App Developer</option>
+      <option value="AI/ML Intern">AI/ML Intern</option>
+      <option value="UI/UX Designer">UI/UX Designer</option>
+    </select>
+  </div>
+  <div class="mb-3 text-start">
+    <label for="cvlink" class="form-label">CV Link (Google Drive / Dropbox)</label>
+    <input type="url" class="form-control" name="cvlink" id="cvlink" required>
+    <small class="text-muted">Upload your CV and paste the shareable link here.</small>
+  </div>
+  <div class="mb-3 text-start">
+    <label for="message" class="form-label">Tell us why you’d be a great fit for this role</label>
+    <textarea class="form-control" name="message" id="message" rows="5" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary px-4">Submit</button>
+</form>
+
     </div>
   </section>
 
