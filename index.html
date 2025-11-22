@@ -746,15 +746,19 @@
             <div class="cta-box fade-up">
                 <h2>Be the First to Know</h2>
                 <p>Join our waitlist and get early access when we launch. No spam, just updates.</p>
-                <form class="email-form" action="https://formspree.io/f/mwpzopbv" method="POST">
+                <form class="email-form" id="waitlist-form">
                     <input type="email" name="email" placeholder="Enter your email" required />
                     <button type="submit" class="btn-primary-custom">
                         <i class="bi bi-send"></i>
                         Join Waitlist
                     </button>
+
                     <input type="hidden" name="_subject" value="New Waitlist Signup - SortMyEntries" />
                     <input type="hidden" name="_captcha" value="false" />
                 </form>
+
+                <p id="waitlist-status" style="margin-top:10px;"></p>
+
             </div>
         </div>
     </section>
@@ -818,13 +822,27 @@
 
         document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-        // Form submission
-        function handleSubmit(e) {
-            e.preventDefault();
-            const email = e.target.querySelector('input').value;
-            alert('Thanks for joining! We\'ll notify you at ' + email + ' when we launch.');
-            e.target.reset();
-        }
+        document.getElementById("waitlist-form").addEventListener("submit", async function (e) {
+            e.preventDefault(); // stop redirect
+
+            const form = e.target;
+            const status = document.getElementById("waitlist-status");
+
+            let data = new FormData(form);
+
+            let res = await fetch("https://formspree.io/f/mwpzopbv", {
+                method: "POST",
+                body: data,
+                headers: { "Accept": "application/json" }
+            });
+
+            if (res.ok) {
+                status.textContent = "🎉 You're added to the waitlist!";
+                form.reset();
+            } else {
+                status.textContent = "⚠️ Something went wrong. Try again!";
+            }
+        });
 
         // Navbar scroll effect
         window.addEventListener('scroll', () => {
@@ -839,6 +857,3 @@
 </body>
 
 </html>
-
-
-
