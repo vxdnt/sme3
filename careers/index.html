@@ -257,6 +257,40 @@
       transform: translateY(-1px)
     }
 
+    .btn-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .popup-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      padding: 1.25rem 2rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+      z-index: 9999;
+      transform: translateX(400px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem
+    }
+
+    .popup-notification.show {
+      transform: translateX(0);
+      opacity: 1
+    }
+
+    .popup-notification.error {
+      background: linear-gradient(135deg, #ef4444, #dc2626)
+    }
+
     .fade-up {
       opacity: 0;
       transform: translateY(30px);
@@ -277,6 +311,12 @@
         padding: 2rem 1.5rem;
         margin: 0 1rem;
         border-radius: 20px
+      }
+
+      .popup-notification {
+        right: 10px;
+        left: 10px;
+        padding: 1rem 1.5rem
       }
     }
   </style>
@@ -355,8 +395,6 @@
           </button>
         </form>
 
-        <p id="application-status" class="mt-4"></p>
-
       </div>
     </div>
   </section>
@@ -371,24 +409,56 @@
     document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
     document.getElementById("application-form").addEventListener("submit", async function (e) {
-      e.preventDefault(); // stop redirect
+      e.preventDefault();
 
       const form = e.target;
-      const status = document.getElementById("application-status");
+      const submitBtn = form.querySelector('.btn-submit');
+      const originalBtnText = submitBtn.innerHTML;
+
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Submitting...';
+      submitBtn.disabled = true;
 
       let data = new FormData(form);
 
-      let res = await fetch("https://formspree.io/f/xzzglbde", {
-        method: "POST",
-        body: data,
-        headers: { "Accept": "application/json" }
-      });
+      try {
+        let res = await fetch("https://formspree.io/f/xzzglbde", {
+          method: "POST",
+          body: data,
+          headers: { "Accept": "application/json" }
+        });
 
-      if (res.ok) {
-        status.innerHTML = "<span style='color:green;'>🎉 Application submitted successfully!</span>";
-        form.reset();
-      } else {
-        status.innerHTML = "<span style='color:red;'>⚠️ Something went wrong. Please try again.</span>";
+        const popup = document.createElement('div');
+        popup.className = 'popup-notification';
+
+        if (res.ok) {
+          popup.innerHTML = '<i class="bi bi-check-circle-fill" style="font-size:1.5rem;"></i><span>🎉 Application submitted successfully!</span>';
+          form.reset();
+        } else {
+          popup.classList.add('error');
+          popup.innerHTML = '<i class="bi bi-exclamation-circle-fill" style="font-size:1.5rem;"></i><span>⚠️ Something went wrong. Please try again.</span>';
+        }
+
+        document.body.appendChild(popup);
+        setTimeout(() => popup.classList.add('show'), 10);
+
+        setTimeout(() => {
+          popup.classList.remove('show');
+          setTimeout(() => popup.remove(), 500);
+        }, 5000);
+
+      } catch (error) {
+        const popup = document.createElement('div');
+        popup.className = 'popup-notification error';
+        popup.innerHTML = '<i class="bi bi-exclamation-circle-fill" style="font-size:1.5rem;"></i><span>⚠️ Network error. Please try again.</span>';
+        document.body.appendChild(popup);
+        setTimeout(() => popup.classList.add('show'), 10);
+        setTimeout(() => {
+          popup.classList.remove('show');
+          setTimeout(() => popup.remove(), 500);
+        }, 5000);
+      } finally {
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
       }
     });
 
