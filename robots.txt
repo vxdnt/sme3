@@ -7,6 +7,7 @@ Allow: /careers/
 # Block specific pages
 Disallow: /privacy/
 Disallow: /terms/
+Disallow: /sitemap.xml
 
 # Ask search engines not to index the robots.txt itself
 Noindex: /robots.txt
