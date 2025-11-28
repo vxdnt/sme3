@@ -3,8 +3,13 @@ Allow: /
 
 # Explicitly allow important pages
 Allow: /careers/
+
+# Block specific pages
 Disallow: /privacy/
 Disallow: /terms/
 
-# Sitemap location
+# Ask search engines not to index the robots.txt itself
+Noindex: /robots.txt
+
+# Sitemap
 Sitemap: https://sortmyentries.in/sitemap.xml
