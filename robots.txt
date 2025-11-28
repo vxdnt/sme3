@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Explicitly allow important pages
+Allow: /careers/
+Disallow: /privacy/
+Disallow: /terms/
+
+# Sitemap location
+Sitemap: https://sortmyentries.in/sitemap.xml
