@@ -1,6 +1,8 @@
 User-agent: *
+Allow: /sitemap.xml
 Allow: /careers/
 Allow: /
 Disallow: /privacy/
 Disallow: /terms/
+
 Sitemap: https://sortmyentries.in/sitemap.xml
