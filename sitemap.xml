@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- Home Page -->
   <url>
     <loc>https://sortmyentries.in/</loc>
     <lastmod>2025-11-28</lastmod>
@@ -9,7 +8,6 @@
     <priority>1.0</priority>
   </url>
 
-  <!-- Careers Page -->
   <url>
     <loc>https://sortmyentries.in/careers/</loc>
     <lastmod>2025-11-28</lastmod>
