@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,233 +31,643 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
+  
   <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      -webkit-font-smoothing: antialiased;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .navbar {
-      padding: 1rem 0;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #fafbfc;
+      color: #000;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      margin-bottom: 60px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .logo {
-      font-size: 1.25rem;
+      font-size: 20px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: #222;
       text-decoration: none;
     }
 
     .nav-link {
-      color: #666 !important;
-      font-size: 0.95rem;
+      color: #666;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
     }
 
     .nav-link:hover {
-      color: #1a1a1a !important;
+      color: #222;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: #f0f0f0;
+      color: #666;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 3px;
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: 3.5rem;
+      font-size: 48px;
       font-weight: 600;
-      line-height: 1.1;
+      color: #222;
+      margin-bottom: 16px;
       letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: #666;
+      max-width: 700px;
+      margin: 0 auto;
     }
 
     h2 {
-      font-size: 2rem;
+      font-size: 32px;
       font-weight: 600;
+      color: #222;
+      margin-bottom: 40px;
       letter-spacing: -0.02em;
     }
 
-    .btn-dark {
-      padding: 0.875rem 1.75rem;
-      border-radius: 8px;
-      font-weight: 500;
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 80px;
+    }
+
+    .role-card {
+      background: white;
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      padding: 28px;
       transition: all 0.2s;
+      cursor: pointer;
     }
 
-    .btn-dark:hover {
-      background-color: #000;
+    .role-card:hover {
+      border-color: #ccc;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
-    .form-control,
-    .form-select {
-      padding: 0.875rem 1.25rem;
-      border-radius: 8px;
-      border: 1px solid #dee2e6;
+    .role-card.selected {
+      border-color: #222;
+      background-color: #fafafa;
     }
 
-    .form-control:focus,
-    .form-select:focus {
-      border-color: #1a1a1a;
-      box-shadow: none;
+    .role-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .role-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 4px;
+    }
+
+    .role-type {
+      font-size: 12px;
+      color: #666;
+      padding: 4px 8px;
+      background-color: #f5f5f5;
+      border-radius: 3px;
+    }
+
+    .role-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .role-requirements {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .requirements-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 8px;
+    }
+
+    .role-requirements ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .role-requirements li {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .role-requirements li:before {
+      content: "•";
+      position: absolute;
+      left: 8px;
+      color: #999;
+    }
+
+    .application-section {
+      background: white;
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      padding: 40px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 8px;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
     }
 
     .form-label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
       font-weight: 500;
-      margin-bottom: 0.5rem;
-      color: #1a1a1a;
     }
 
-    .form-text {
-      font-size: 0.875rem;
+    .form-label.required:after {
+      content: " *";
+      color: #ef6c00;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: #999;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: 1px solid #e0e0e0;
+      background: white;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background-color: #f5f5f5;
+      border-color: #ccc;
+    }
+
+    .btn-primary {
+      background-color: #222;
+      color: white;
+      border-color: #222;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-primary:hover {
+      background-color: #000;
+      border-color: #000;
+    }
+
+    .btn-primary:disabled {
+      background-color: #ccc;
+      border-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      text-align: center;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .status-message.success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+      display: block;
+    }
+
+    .status-message.error {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+      display: block;
+    }
+
+    footer {
+      margin-top: 100px;
+      padding-top: 40px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-brand {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 4px;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 12px;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #e0e0e0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .social-link:hover {
+      border-color: #ccc;
+      color: #222;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      font-size: 13px;
       color: #666;
     }
 
     @media (max-width: 768px) {
       h1 {
-        font-size: 2.5rem;
+        font-size: 36px;
       }
 
       h2 {
-        font-size: 1.75rem;
+        font-size: 28px;
+      }
+
+      .roles-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .application-section {
+        padding: 28px 20px;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
 </head>
-
 <body>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="/" class="logo">SortMyEntries</a>
-      <ul class="nav d-none d-md-flex gap-4 mb-0">
-        <li class="nav-item"><a href="/#contact" class="nav-link">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <!-- Hero -->
-  <section class="py-5 mt-5">
-    <div class="container">
-      <div class="text-center mb-5">
-        <span class="badge bg-light text-secondary border mb-4">We're Hiring</span>
-        <h1 class="mb-4">Build the Future With Us</h1>
-        <p class="fs-5 text-secondary mb-0" style="max-width: 700px; margin: 0 auto;">
-          We're assembling a team of passionate builders to reimagine how India experiences events. Ready to make an impact?
-        </p>
+  <div class="container">
+    
+    <header>
+      <div class="header-top">
+        <a href="/" class="logo">SortMyEntries</a>
       </div>
-      <div class="p-3 mx-auto" style="max-width: 700px;">
-        <form id="application-form">
-          <div class="mb-5">
-            <label for="name" class="form-label">Full Name</label>
-            <input type="text" class="form-control" name="name" id="name" required>
-          </div>
+    </header>
 
-          <div class="mb-5">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" class="form-control" name="_replyto" id="email" required>
-          </div>
-
-          <div class="mb-5">
-            <label for="role" class="form-label">Role You're Applying For</label>
-            <select class="form-select" name="role" id="role" required>
-              <option value="" disabled selected>Select a role</option>
-              <option value="Frontend Developer">Frontend Developer</option>
-              <option value="Backend Developer">Backend Developer</option>
-              <option value="App Developer">App Developer</option>
-              <option value="AI/ML Intern">AI/ML Intern</option>
-              <option value="Content Creator">Content Creator</option>
-            </select>
-          </div>
-
-          <div class="mb-5">
-            <label for="cvlink" class="form-label">Upload CV</label>
-            <input type="url" class="form-control" name="cvlink" id="cvlink" placeholder="https://drive.google.com/..." required>
-            <div class="form-text">Upload a Google Drive or Dropbox link</div>
-          </div>
-
-          <div class="mb-5">
-            <label for="portfolio" class="form-label">Portfolio / GitHub (Optional)</label>
-            <input type="url" class="form-control" name="portfolio" id="portfolio" placeholder="https://github.com/...">
-          </div>
-
-          <div class="mb-5">
-            <label for="message" class="form-label">Why Would You Be a Great Fit?</label>
-            <textarea class="form-control" name="message" id="message" rows="4" placeholder="Tell us about your experience..." required></textarea>
-          </div>
-
-          <input type="hidden" name="_subject" value="New Job Application - SortMyEntries" />
-          <input type="hidden" name="_captcha" value="false" />
-
-          <button type="submit" class="btn btn-dark w-100">
-            <i class="bi bi-send me-2"></i>Submit Application
-          </button>
-        </form>
-
-        <p id="application-status" class="text-center text-secondary small mb-0 mt-3"></p>
-      </div>
+    <div class="hero">
+      <span class="badge">We're Hiring</span>
+      <h1>Build the Future With Us</h1>
+      <p class="hero-subtitle">We're assembling a team of passionate builders to reimagine how India experiences events. Ready to make an impact?</p>
     </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="border-top py-5 mt-5">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-4 mb-4">
-        <div>
-          <div class="fw-semibold fs-5">SortMyEntries</div>
-          <p class="text-secondary small mb-0 mt-1">
-            One Card. Every Event. Zero Hassle.
-          </p>
+    <section style="margin-bottom: 80px;">
+      <h2>Open Positions</h2>
+      <div class="roles-grid" id="rolesGrid">
+        
+        <div class="role-card" onclick="selectRole(this, 'Full Stack Developer')">
+          <div class="role-header">
+            <div>
+              <div class="role-title">Full Stack Developer</div>
+            </div>
+            <span class="role-type">Full-time</span>
+          </div>
+          <p class="role-description">Build end-to-end features for our platform. Work with Python Flask backend, PostgreSQL database, and modern frontend technologies.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Strong experience with Python and Flask framework</li>
+              <li>Proficiency in HTML5, CSS3, JavaScript, and Bootstrap</li>
+              <li>Experience with PostgreSQL and SQLAlchemy ORM</li>
+              <li>Knowledge of Jinja2 templating and RBAC systems</li>
+              <li>Understanding of RESTful API design</li>
+            </ul>
+          </div>
         </div>
 
-        <div class="d-flex gap-3">
-          <a href="https://www.linkedin.com/company/sortmyentries/"
-            class="social-link border d-flex align-items-center justify-content-center text-secondary text-decoration-none"
-            target="_blank" style="width: 40px; height: 40px; border-radius: 50%;">
+        <div class="role-card" onclick="selectRole(this, 'Backend Developer')">
+          <div class="role-header">
+            <div>
+              <div class="role-title">Backend Developer</div>
+            </div>
+            <span class="role-type">Full-time</span>
+          </div>
+          <p class="role-description">Build robust, scalable APIs and services. Work with Python Flask, PostgreSQL, and cloud infrastructure to power our platform.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Strong experience with Python and Flask framework</li>
+              <li>Database design with PostgreSQL and SQLAlchemy ORM</li>
+              <li>Knowledge of RESTful API design and best practices</li>
+              <li>Experience with RBAC and authentication systems</li>
+              <li>Familiarity with cloud platforms (AWS/GCP)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="role-card" onclick="selectRole(this, 'Frontend Developer')">
+          <div class="role-header">
+            <div>
+              <div class="role-title">Frontend Developer</div>
+            </div>
+            <span class="role-type">Full-time</span>
+          </div>
+          <p class="role-description">Build beautiful, responsive web experiences that delight our users. Work with HTML, Bootstrap, CSS, JavaScript, and Jinja2 templates.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Strong experience with HTML5, CSS3, and JavaScript</li>
+              <li>Proficiency with Bootstrap framework</li>
+              <li>Experience with Jinja2 or similar templating engines</li>
+              <li>Eye for design and attention to detail</li>
+              <li>Understanding of responsive design and cross-browser compatibility</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="role-card" onclick="selectRole(this, 'AI/ML Intern')">
+          <div class="role-header">
+            <div>
+              <div class="role-title">AI/ML Intern</div>
+            </div>
+            <span class="role-type">Internship</span>
+          </div>
+          <p class="role-description">Help us leverage AI and machine learning to enhance our platform. Work on recommendation systems, data analysis, and intelligent features using Python.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Background in machine learning and data science</li>
+              <li>Experience with Python ML frameworks (scikit-learn, TensorFlow, PyTorch)</li>
+              <li>Proficiency with pandas, numpy, and data processing</li>
+              <li>Understanding of algorithms and model optimization</li>
+              <li>Passion for learning and experimentation</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="role-card" onclick="selectRole(this, 'Content Creator')">
+          <div class="role-header">
+            <div>
+              <div class="role-title">Content Creator</div>
+            </div>
+            <span class="role-type">Part-time</span>
+          </div>
+          <p class="role-description">Create engaging content that tells our story. Work on social media, marketing materials, and community engagement.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Strong writing and communication skills</li>
+              <li>Experience with social media platforms</li>
+              <li>Creative thinking and storytelling ability</li>
+              <li>Basic design skills (Canva, Figma, etc.)</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="application-section">
+      <h3 class="section-title">Apply Now</h3>
+      <p class="section-subtitle">Fill out the form below and we'll get back to you within 48 hours.</p>
+
+      <form id="applicationForm">
+        <div class="form-group">
+          <label for="name" class="form-label required">Full Name</label>
+          <input type="text" class="form-input" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label required">Email Address</label>
+          <input type="email" class="form-input" id="email" name="_replyto" required>
+        </div>
+
+        <div class="form-group">
+          <label for="role" class="form-label required">Role You're Applying For</label>
+          <select class="form-select" id="role" name="role" required>
+            <option value="" disabled selected>Select a role</option>
+            <option value="Full Stack Developer">Full Stack Developer</option>
+            <option value="Backend Developer">Backend Developer</option>
+            <option value="Frontend Developer">Frontend Developer</option>
+            <option value="AI/ML Intern">AI/ML Intern</option>
+            <option value="Content Creator">Content Creator</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cvlink" class="form-label required">CV / Resume Link</label>
+          <input type="url" class="form-input" id="cvlink" name="cvlink" placeholder="https://drive.google.com/..." required>
+          <div class="form-hint">Upload your CV to Google Drive or Dropbox and share a PUBLIC link (our system needs access to process your application)</div>
+        </div>
+
+        <div class="form-group">
+          <label for="portfolio" class="form-label">Portfolio / GitHub</label>
+          <input type="url" class="form-input" id="portfolio" name="portfolio" placeholder="https://github.com/...">
+          <div class="form-hint">Share your portfolio, GitHub profile, or relevant work samples</div>
+        </div>
+
+        <div class="form-group">
+          <label for="message" class="form-label required">Why Would You Be a Great Fit?</label>
+          <textarea class="form-textarea" id="message" name="message" placeholder="Tell us about your experience, skills, and what excites you about this role..." required></textarea>
+        </div>
+
+        <input type="hidden" name="_subject" value="New Job Application - SortMyEntries" />
+        <input type="hidden" name="_captcha" value="false" />
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          <i class="bi bi-send"></i>
+          Submit Application
+        </button>
+
+        <div id="statusMessage" class="status-message"></div>
+      </form>
+    </section>
+
+    <footer>
+      <div class="footer-content">
+        <div>
+          <div class="footer-brand">SortMyEntries</div>
+        </div>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/company/sortmyentries/" class="social-link" target="_blank" aria-label="LinkedIn">
             <i class="bi bi-linkedin"></i>
           </a>
-          <a href="https://www.instagram.com/sortmyentries"
-            class="social-link border d-flex align-items-center justify-content-center text-secondary text-decoration-none"
-            target="_blank" style="width: 40px; height: 40px; border-radius: 50%;">
+          <a href="https://www.instagram.com/sortmyentries" class="social-link" target="_blank" aria-label="Instagram">
             <i class="bi bi-instagram"></i>
-          </a>
-          <a href="https://twitter.com/sortmyentries"
-            class="social-link border d-flex align-items-center justify-content-center text-secondary text-decoration-none"
-            target="_blank" style="width: 40px; height: 40px; border-radius: 50%;">
-            <i class="bi bi-twitter-x"></i>
           </a>
         </div>
       </div>
-
-      <div class="text-center text-secondary small">
+      <div class="footer-bottom">
         © 2025 SortMyEntries. All rights reserved. | Mumbai, India
       </div>
-    </div>
-  </footer>
+    </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </div>
+
   <script>
-    document.getElementById("application-form").addEventListener("submit", async function (e) {
+    function selectRole(card, roleName) {
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      
+      const roleSelect = document.getElementById('role');
+      roleSelect.value = roleName;
+      
+      document.querySelector('.application-section').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+
+    document.getElementById('applicationForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-
+      
       const form = e.target;
-      const status = document.getElementById("application-status");
+      const submitBtn = document.getElementById('submitBtn');
+      const statusMessage = document.getElementById('statusMessage');
       const data = new FormData(form);
-
+      
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting...';
+      statusMessage.className = 'status-message';
+      statusMessage.style.display = 'none';
+      
       try {
-        const res = await fetch("https://formspree.io/f/xzzglbde", {
-          method: "POST",
+        const res = await fetch('https://formspree.io/f/xzzglbde', {
+          method: 'POST',
           body: data,
-          headers: { "Accept": "application/json" }
+          headers: { 'Accept': 'application/json' }
         });
-
+        
         if (res.ok) {
-          status.textContent = "✓ Application submitted successfully!";
-          status.style.color = "#1a1a1a";
+          statusMessage.textContent = '✓ Application submitted successfully! We\'ll get back to you soon.';
+          statusMessage.className = 'status-message success';
           form.reset();
+          document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
         } else {
-          status.textContent = "Something went wrong. Please try again.";
-          status.style.color = "#999";
+          throw new Error('Submission failed');
         }
       } catch (error) {
-        status.textContent = "Something went wrong. Please try again.";
-        status.style.color = "#999";
+        statusMessage.textContent = '✗ Something went wrong. Please try again or email us directly.';
+        statusMessage.className = 'status-message error';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-send"></i> Submit Application';
       }
     });
   </script>
 </body>
-
 </html>
