@@ -18,287 +18,199 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: #fafbfc;
-            color: black;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .navbar {
+            margin: 0;
+            background: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #111;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            position: relative;
-            z-index: 2000;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: semibold;
-        }
-
-        .nav-buttons button {
-            margin-left: 1rem;
-            padding: 1px 1.5rem;
-            background-color: white;
+            justify-content: center;
         }
 
         .container {
-            text-align: center;
-            margin-top: 50px;
+            max-width: 700px;
+            width: 100%;
+            padding: 2rem 1rem 3rem;
+        }
+
+        header {
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        header p {
+            color: #555;
+            line-height: 1.6;
+            margin-right: -25px;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2.5rem;
+            border-left: 1.5px solid #d4d4d4;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .timeline-item {
+            position: relative;
+        }
+
+        /* Center-aligned square marker */
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -2.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 9px;
+            height: 9px;
+            background: #111;
         }
 
         .card {
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            max-width: 320px;
-            margin-left: auto;
-            margin-right: auto;
+            border: 1px solid #ddd;
+            padding: 1rem 1.2rem;
+            border-radius: 4px;
+            background-color: #fafbfc;
         }
 
-        .card-body {
-            padding-top: 5px;
+        .card.highlight {
+            border: 1px solid #000;
         }
 
-        .card-title,
-        .card-text {
-            text-align: start;
+        .card h3 {
+            font-size: 1rem;
+            margin: 0 0 0.4rem;
+            font-weight: 500;
         }
 
-        .hamburger {
-            display: none;
-            width: 24px;
-            height: 18px;
-            flex-direction: column;
-            justify-content: space-between;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
+        .card p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.5;
         }
 
-        .hamburger span {
-            display: block;
-            height: 2px;
-            background: black;
-            border-radius: 2px;
-            transition: transform 200ms ease, opacity 200ms ease;
-        }
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e5e5;
+            font-size: 0.9rem;
+            color: #555;
 
-        .nav-buttons {
             display: flex;
             align-items: center;
-            z-index: 2100;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: nowrap;
         }
 
-        .nav-buttons button {
-            margin-left: 1rem;
-            padding: 6px 14px;
-            background: white;
-            color: #000;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-weight: 600;
+        footer a {
+            color: #111;
+            text-decoration: underline;
+            white-space: nowrap;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 2px;
         }
 
-        @media (max-width: 700px) {
-            .navbar {
-                padding: 0.75rem 1rem;
-            }
-
-            .logo {
-                font-size: 1.25rem;
-            }
-
-            .title {
-                font-size: 1.5rem;
-            }
-
-            .hamburger {
-                display: flex;
-            }
-
-            .lead {
-                font-size: 1rem;
-            }
-
-            .card-title {
-                font-size: 1.1rem;
-            }
-
-            .card-text {
-                font-size: 0.9rem;
-            }
-
-            .nav-buttons {
-                display: none;
-                position: absolute;
-                right: 1rem;
-                top: 60px;
-                background: transparent;
-                flex-direction: column;
-                gap: 0.5rem;
-                align-items: flex-end;
-                z-index: 2100;
-            }
-
-            .nav-buttons.open {
-                display: flex;
-            }
-
-            .nav-buttons button {
-                width: 140px;
-                padding: 0.6rem 0.9rem;
-                border-radius: 8px;
-            }
+        .linkedin {
+            display: flex;
+            align-items: center;
         }
 
-        /* Hamburger -> X */
-        .hamburger.open span:nth-child(1) {
-            transform: translateY(8px) rotate(45deg);
+        .linkedin svg {
+            width: 20px;
+            height: 20px;
+            fill: #111;
         }
 
-        .hamburger.open span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.open span:nth-child(3) {
-            transform: translateY(-8px) rotate(-45deg);
-        }
-
-        /* When mobile menu is open, prevent background scroll and blur page content */
-        body.nav-open {
-            overflow: hidden;
-        }
-
-        body.nav-open .container,
-        body.nav-open footer {
-            filter: blur(10px);
-            transition: filter 180ms ease;
-            pointer-events: none;
-            user-select: none;
+        @media (max-width: 420px) {
+            footer {
+                gap: 0.75rem;
+            }
         }
     </style>
 </head>
 
 <body>
-
-    <navbar>
-        <div class="navbar" style="position:relative;">
-            <div class="logo">SortMyEntries</div>
-            <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="nav-buttons">
-                <button onclick="location.href='mailto:vedant@sortmyentries.in'">
-                    Contact
-                </button>
-            </div>
-        </div>
-    </navbar>
-
     <div class="container">
-        <h1 class="title mt-5">Welcome to SortMyEntries</h1>
-        <p class="lead">Unlock exclusive events, connect with like-minded people, and create memories that last forever.
-            One seamless platform for every moment.</p>
-        <h6 style="color: red">Coming Soon</h6>
 
-        <div class="row mt-5">
-            <div class="col-6 col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mt-3">AI-Powered</h5>
-                        <p class="card-text">Smart recommendations tailored to your taste.</p>
-                    </div>
+        <header>
+            <h1>SortMyEntries</h1>
+            <p>
+                SortMyEntries is an event listing and ticketing platform designed to help organizers
+                create, manage, and sell event entries efficiently, with built-in AI analytics,
+                collaboration tools, and discovery.
+            </p>
+        </header>
+
+        <main class="timeline">
+
+            <div class="timeline-item">
+                <div class="card highlight">
+                    <h3>Currently under development</h3>
+                    <p>
+                        The core platform is actively being built, with a focus on reliability,
+                        scalability, and user experience.
+                    </p>
                 </div>
             </div>
-            <div class="col-6 col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mt-3">Identity-First</h5>
-                        <p class="card-text">One verified identity for seamless access to all events.</p>
-                    </div>
+
+            <div class="timeline-item">
+                <div class="card">
+                    <h3>Incubated at Nirmaan Pre-Incubation Cell, IIT Madras</h3>
+                    <p>
+                        Got selected for incubation at Nirmaan, the pre-incubation cell of IIT Madras, receiving
+                        mentorship, ecosystem access, and early-stage support.
+                    </p>
                 </div>
             </div>
-            <div class="col-6 col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mt-3">Secure</h5>
-                        <p class="card-text">Enterprise-grade security for your peace of mind.</p>
-                    </div>
+
+            <div class="timeline-item">
+                <div class="card">
+                    <h3>Secured Pre-seed funding</h3>
+                    <p>
+                        Raised pre-seed capital to accelerate product development,
+                        validate market demand, and drive early adoption.
+                    </p>
                 </div>
             </div>
-            <div class="col-6 col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mt-3">Frictionless</h5>
-                        <p class="card-text">Quick entry in seconds, not minutes. No more waiting.</p>
-                    </div>
+
+            <div class="timeline-item">
+                <div class="card">
+                    <h3>Offline promotional partners</h3>
+                    <p>
+                        Actively working as offline promotional partners for concerts
+                        and club events to strengthen on-ground reach.
+                    </p>
                 </div>
             </div>
-            <div class="col-6 col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mt-3">Data-Driven</h5>
-                        <p class="card-text">Real-time insights for better event experiences.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mt-3">Community</h5>
-                        <p class="card-text">Built for fans, powered by passion & connection.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+        </main>
+
+        <footer>
+            <a href="mailto:vedant@sortmyentries.in">vedant@sortmyentries.in</a>
+
+            <a class="linkedin" href="https://www.linkedin.com/company/sortmyentries" target="_blank"
+                aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.11 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4zM8.5 8h3.8v2.2h.05c.53-1 1.83-2.2 3.77-2.2 4.03 0 4.78 2.65 4.78 6.1V24h-4v-8.7c0-2.08-.04-4.76-2.9-4.76-2.9 0-3.35 2.26-3.35 4.6V24h-4z" />
+                </svg>
+            </a>
+        </footer>
+
     </div>
-
-    <footer class="text-center mt-5 mb-3">
-        <p>&copy; 2024 SortMyEntries. All rights reserved.</p>
-    </footer>
-
-    <script>
-        // Mobile hamburger toggle (very small, unobtrusive)
-        (function () {
-            const btn = document.querySelector('.hamburger');
-            const nav = document.querySelector('.nav-buttons');
-            if (!btn || !nav) return;
-            btn.addEventListener('click', function () {
-                const open = btn.classList.toggle('open');
-                nav.classList.toggle('open', open);
-                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-                document.body.classList.toggle('nav-open', open);
-            });
-            // close menu if window is resized back to desktop
-            window.addEventListener('resize', function () {
-                if (window.innerWidth > 700) {
-                    btn.classList.remove('open');
-                    nav.classList.remove('open');
-                    btn.setAttribute('aria-expanded', 'false');
-                    document.body.classList.remove('nav-open');
-                }
-            });
-        })();
-    </script>
-
 </body>
 
 </html>
+
 
