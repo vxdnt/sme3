@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <meta property="og:title" content="SortMyEntries">
-    <meta property="og:description" content="Experience it with us.">
+    <meta property="og:description" content="Access to Events.">
     <meta name="description" content="Access to Events.">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -32,30 +32,30 @@
         }
 
         header {
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         header h1 {
             font-size: 1.5rem;
             margin-bottom: 1rem;
             font-weight: 500;
+            text-align: center;
         }
 
         header p {
             color: #555;
             line-height: 1.6;
-            margin-right: -25px;
             font-size: 0.9rem;
         }
 
         /* Timeline */
         .timeline {
             position: relative;
-            padding-left: 2.5rem;
+            padding-left: 1.5rem;
             border-left: 1.5px solid #d4d4d4;
             display: flex;
             flex-direction: column;
-            gap: 1.8rem;
+            gap: 1rem;
         }
 
         .timeline-item {
@@ -66,23 +66,23 @@
         .timeline-item::before {
             content: "";
             position: absolute;
-            left: -2.9rem;
+            left: -1.7rem;
             top: 50%;
             transform: translateY(-50%);
-            width: 9px;
-            height: 9px;
+            width: 6px;
+            height: 6px;
             background: #111;
         }
 
         .card {
             border: 1px solid #ddd;
-            padding: 1rem 1.2rem;
+            padding: 1rem;
             border-radius: 4px;
             background-color: #fafbfc;
         }
 
         .card.highlight {
-            border: 1px solid #000;
+            border: 1px solid #666;
         }
 
         .card h3 {
@@ -135,6 +135,10 @@
             footer {
                 gap: 0.75rem;
             }
+        }
+
+        html, body {
+            height: 100%;
         }
     </style>
 </head>
@@ -192,7 +196,7 @@
                 aria-label="LinkedIn">
                 <svg viewBox="0 0 24 24">
                     <path
-                        d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.11 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4zM8.5 8h3.8v2.2h.05c.53-1 1.83-2.2 3.77-2.2 4.03 0 4.78 2.65 4.78 6.1V24h-4v-8.7c0-2.08-.04-4.76-2.9-4.76-2.9 0-3.35 2.26-3.35 4.6V24h-4z" />
+                        d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z" />
                 </svg>
             </a>
         </footer>
