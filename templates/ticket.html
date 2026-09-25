@@ -471,9 +471,24 @@
     const lastCheckedLine = document.getElementById('lastCheckedLine');
     const lastCheckedTime = document.getElementById('lastCheckedTime');
 
+    function formatIstTimestamp(value) {
+      if (!value) return '—';
+      const raw = String(value).trim();
+      const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+      const date = new Date(iso.includes('+') ? iso : iso + '+05:30');
+      if (Number.isNaN(date.getTime())) return raw;
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).format(date);
+    }
+
     function showLastCheckedIn(timeStr) {
       if (!timeStr) return;
-      lastCheckedTime.textContent = timeStr;
+      const formatted = formatIstTimestamp(timeStr);
+      lastCheckedLine.innerHTML = '✓ Ticket verified at <strong>' + formatted + '</strong>';
       lastCheckedLine.classList.add('show');
       const badge = document.getElementById('ticketCategory');
       badge.textContent = ticket.category + ' · ✓ Checked In';
@@ -592,13 +607,13 @@
           throw new Error(data.detail || data.error || 'Check-in failed');
         }
 
-        // Show popup: "Scanned Successful at [time]"
+        // Show popup: "Ticket verified at 3:14 PM"
         scannerStatus.textContent = '';
         scanResult.style.display = 'block';
-        scanResult.textContent = '✓ Scanned Successful at ' + data.scannedAt;
+        scanResult.textContent = 'Ticket verified at ' + formatIstTimestamp(data.scannedAt || data.scannedAtRaw);
 
         // Update ticket with last checked-in line in green
-        showLastCheckedIn(data.scannedAt);
+        showLastCheckedIn(data.scannedAt || data.scannedAtRaw);
 
         // Close modal and throw back to ticket page after 2 seconds
         if (closeTimeout) clearTimeout(closeTimeout);

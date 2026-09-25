@@ -9,7 +9,9 @@ import sqlite3
 import time
 import json
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, HTTPException
@@ -141,6 +143,13 @@ def init_db():
             print("     To switch to Neon DB, add DATABASE_URL=postgresql://... to .env")
         except Exception as e:
             print(f"[DB] SQLite initialization error: {e}")
+
+
+def ensure_demo_attendee_exists():
+    demo_email = 'attendee@example.com'
+    attendee = db_get_attendee(demo_email)
+    if not attendee:
+        db_add_attendee(demo_email, 'Attendee', 1, 'Male Stag')
 
 
 def db_add_attendee(email: str, name: str, quantity: int, category: str = "Male Stag"):
@@ -368,6 +377,29 @@ def db_mark_ticket_sent(email: str):
             conn.close()
 
 
+def format_ist_datetime(value: str | datetime | None) -> str:
+    if not value:
+        return "—"
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        raw = str(value).strip()
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        try:
+            dt = datetime.fromisoformat(raw)
+        except ValueError:
+            if "T" not in raw and " " in raw:
+                raw = raw.replace(" ", "T", 1)
+            try:
+                dt = datetime.fromisoformat(raw)
+            except ValueError:
+                dt = datetime.strptime(raw[:19], "%Y-%m-%d %H:%M:%S")
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ZoneInfo("Asia/Kolkata"))
+    return dt.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%d-%m-%Y %H:%M:%S")
+
+
 def make_qr_data_uri(payload: str) -> str:
     img = qrcode.make(payload, border=2)
     buf = io.BytesIO()
@@ -415,6 +447,7 @@ async def lifespan(app: FastAPI):
     print(f"    Dynamic QR Display: {BASE_URL}/generator")
     print(f"    Attendee Ticket:    {BASE_URL}/ticket?email=attendee@example.com&name=Attendee\n")
     init_db()
+    ensure_demo_attendee_exists()
     rotate_token(BASE_URL)
     task = asyncio.create_task(rotation_loop())
     try:
@@ -619,14 +652,22 @@ def custom_404_html(message: str = "We couldn't find that page.") -> str:
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception(request: Request, exc: StarletteHTTPException):
+    is_api = request.url.path.startswith("/api/")
+    detail = getattr(exc, "detail", "An error occurred.")
     if exc.status_code == 404:
+        if is_api:
+            return JSONResponse({"ok": False, "error": detail}, status_code=404)
         accept = request.headers.get("accept", "")
         if "application/json" in accept.lower():
-            return JSONResponse({"ok": False, "error": "Not found."}, status_code=404)
+            return JSONResponse({"ok": False, "error": detail}, status_code=404)
         return HTMLResponse(custom_404_html("The page or API endpoint you requested doesn't exist."), status_code=404)
     if exc.status_code == 405:
+        if is_api:
+            return JSONResponse({"ok": False, "error": detail}, status_code=405)
         return HTMLResponse(custom_404_html("This action is not allowed for this URL."), status_code=405)
-    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+    if is_api:
+        return JSONResponse({"ok": False, "error": detail}, status_code=exc.status_code)
+    return JSONResponse({"detail": detail}, status_code=exc.status_code)
 
 
 # ── Dynamic QR & Ticketing Routes ──
@@ -889,6 +930,11 @@ async def api_checkin(body: CheckInBody, request: Request, response: Response):
     if not email:
         raise HTTPException(status_code=400, detail="Email is required.")
 
+    ensure_demo_attendee_exists()
+    attendee = db_get_attendee(email)
+    if not attendee:
+        raise HTTPException(status_code=404, detail="This email is not registered for this event. Please use a valid attendee ticket.")
+
     device_id = request.cookies.get("device_id")
     if not device_id:
         device_id = f"dev_{secrets.token_hex(6)}"
@@ -902,7 +948,8 @@ async def api_checkin(body: CheckInBody, request: Request, response: Response):
     parsed = parse_user_agent(ua, platform)
 
     scan_id = secrets.token_hex(4)
-    scanned_at = time.strftime("%Y-%m-%d %H:%M:%S")
+    scanned_at = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
+    scanned_at_display = format_ist_datetime(scanned_at)
 
     existing = db_get_attendee(email)
     if not existing:
@@ -933,12 +980,13 @@ async def api_checkin(body: CheckInBody, request: Request, response: Response):
         "browser": parsed["browser"],
         "userAgent": ua,
         "language": language,
-        "approvedAt": scanned_at,
+        "approvedAt": scanned_at_display,
+        "approvedAtRaw": scanned_at,
         "timesScanned": times_scanned + 1,
     }
     if is_rescan:
-        event_payload["lastScan"] = last_scan
-        event_payload["newScan"] = scanned_at
+        event_payload["lastScan"] = format_ist_datetime(last_scan) if last_scan else scanned_at_display
+        event_payload["newScan"] = scanned_at_display
 
     for q in subscribers:
         q.put_nowait(event_payload)
@@ -951,7 +999,8 @@ async def api_checkin(body: CheckInBody, request: Request, response: Response):
         "ok": True,
         "name": attendee_name,
         "email": email,
-        "scannedAt": scanned_at,
+        "scannedAt": scanned_at_display,
+        "scannedAtRaw": scanned_at,
         "timesScanned": times_scanned + 1,
         "isRescan": is_rescan,
     }

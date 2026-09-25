@@ -487,7 +487,6 @@
               <th>Checked In At</th>
               <th>Last Scanned At</th>
               <th># Times Scanned</th>
-              <th>Ticket</th>
             </tr>
           </thead>
           <tbody id="logTableBody"></tbody>
@@ -613,10 +612,36 @@
   setInterval(refreshQrToken, 3000);
   refreshQrToken();
 
+  function formatIstTimestamp(value) {
+    if (!value) return '—';
+    const raw = String(value).trim();
+    const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+    const date = new Date(iso.includes('+') ? iso : iso + '+05:30');
+    if (Number.isNaN(date.getTime())) return raw;
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).formatToParts(date);
+    const day = parts.find(p => p.type === 'day')?.value || '00';
+    const month = parts.find(p => p.type === 'month')?.value || '00';
+    const year = parts.find(p => p.type === 'year')?.value || '0000';
+    const hour = parts.find(p => p.type === 'hour')?.value || '00';
+    const minute = parts.find(p => p.type === 'minute')?.value || '00';
+    const second = parts.find(p => p.type === 'second')?.value || '00';
+    return `${day}-${month}-${year} ${hour}:${minute}:${second}`;
+  }
+
   function showScanToast(data) {
     const isRescan = data.type === 'already_approved';
     toastTitle.textContent = isRescan ? 'Re-Scan Detected' : 'Scan Verified!';
-    toastDetail.textContent = (data.name || data.email || 'Guest') + ' · ' + (data.approvedAt || data.newScan || '');
+    const timeValue = data.approvedAt || data.newScan || data.approvedAtRaw || '';
+    toastDetail.textContent = (data.name || data.email || 'Guest') + ' · ' + formatIstTimestamp(timeValue);
     scanAlertToast.classList.add('show');
 
     if (toastTimer) clearTimeout(toastTimer);
@@ -666,13 +691,7 @@
         '<td>' + esc(attendeeQty) + '</td>' +
         '<td>' + esc(checkedInAt) + '</td>' +
         '<td>' + esc(lastScannedAt) + '</td>' +
-        '<td><span class="badge ' + badgeClass + '">' + scans + '</span></td>' +
-        '<td>' +
-          '<div style="display:flex;gap:4px;align-items:center;">' +
-            '<a href="' + tUrl + '" target="_blank" class="btn-sm" style="padding:3px 8px;font-size:0.75rem;">Open ↗</a>' +
-            '<button type="button" class="btn-sm" style="padding:3px 8px;font-size:0.75rem;" title="Send or Resend ticket email" onclick="resendAttendeeEmail(\'' + esc(row.email) + '\', this)">' + (row.ticket_sent ? '✉ Resend' : '✉ Send') + '</button>' +
-          '</div>' +
-        '</td>';
+        '<td><span class="badge ' + badgeClass + '">' + scans + '</span></td>';
       logTableBody.appendChild(tr);
     });
   }
