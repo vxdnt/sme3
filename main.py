@@ -1,13 +1,5 @@
-import asyncio
-import base64
-import io
-import logging
-import os
-import secrets
-import socket
-import sqlite3
-import time
-import json
+import asyncio, base64, io, logging, os, secrets, socket, sqlite3, time, json
+
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -65,8 +57,13 @@ def get_pg_connection():
 
 
 def get_sqlite_connection():
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect("database.db", timeout=15, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    # WAL mode lets readers (polling GET /api/attendees) and writers (POST /api/checkin)
+    # proceed concurrently instead of blocking each other; busy_timeout makes any
+    # remaining lock contention retry instead of failing immediately/silently.
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout=15000;")
     return conn
 
 
@@ -907,6 +904,7 @@ async def list_attendees():
         attendees = db_list_attendees()
         return {"ok": True, "attendees": attendees}
     except Exception as e:
+        logging.getLogger("uvicorn.error").exception("Failed to list attendees")
         return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
 
 
@@ -928,93 +926,105 @@ class CheckInBody(BaseModel):
 @app.post("/api/checkin")
 async def api_checkin(body: CheckInBody, request: Request, response: Response):
     global current_base_url
+    _scan_logger.info(f"[checkin] incoming request email={body.email!r} token={body.token[:8]}...")
 
     if body.token != current_token or time.time() >= expires_at:
+        _scan_logger.info("[checkin] rejected: token invalid/expired")
         raise HTTPException(status_code=410, detail="QR code expired — please scan the latest code on display.")
 
     email = body.email.lower().strip()
     if not email:
         raise HTTPException(status_code=400, detail="Email is required.")
 
-    ensure_demo_attendee_exists()
-    attendee = db_get_attendee(email)
-    if not attendee:
-        raise HTTPException(status_code=404, detail="This email is not registered for this event. Please use a valid attendee ticket.")
+    try:
+        ensure_demo_attendee_exists()
+        attendee = db_get_attendee(email)
+        if not attendee:
+            _scan_logger.info(f"[checkin] rejected: {email} not registered")
+            raise HTTPException(status_code=404, detail="This email is not registered for this event. Please use a valid attendee ticket.")
 
-    device_id = request.cookies.get("device_id")
-    if not device_id:
-        device_id = f"dev_{secrets.token_hex(6)}"
-        response.set_cookie("device_id", device_id, max_age=60 * 60 * 24 * 365, httponly=True)
+        device_id = request.cookies.get("device_id")
+        if not device_id:
+            device_id = f"dev_{secrets.token_hex(6)}"
+            response.set_cookie("device_id", device_id, max_age=60 * 60 * 24 * 365, httponly=True)
 
-    ua = request.headers.get("user-agent", "Unknown")
-    platform = request.headers.get("sec-ch-ua-platform", "").strip('"')
-    language = request.headers.get("accept-language", "en").split(",")[0]
-    forwarded = request.headers.get("x-forwarded-for")
-    ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "Unknown")
-    parsed = parse_user_agent(ua, platform)
+        ua = request.headers.get("user-agent", "Unknown")
+        platform = request.headers.get("sec-ch-ua-platform", "").strip('"')
+        language = request.headers.get("accept-language", "en").split(",")[0]
+        forwarded = request.headers.get("x-forwarded-for")
+        ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "Unknown")
+        parsed = parse_user_agent(ua, platform)
 
-    scan_id = secrets.token_hex(4)
-    scanned_at = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
-    scanned_at_display = format_ist_datetime(scanned_at)
+        scan_id = secrets.token_hex(4)
+        scanned_at = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
+        scanned_at_display = format_ist_datetime(scanned_at)
 
-    existing = db_get_attendee(email)
-    fallback_name = (body.email.split('@')[0].capitalize()) if body.email else 'Attendee'
-    if not existing:
-        db_add_attendee(email, name=fallback_name, quantity=1)
-    elif not existing.get('name'):
-        db_add_attendee(email, name=fallback_name, quantity=existing.get('quantity', 1), category=existing.get('category', 'Male Stag'))
+        existing = db_get_attendee(email)
+        fallback_name = (body.email.split('@')[0].capitalize()) if body.email else 'Attendee'
+        if not existing:
+            db_add_attendee(email, name=fallback_name, quantity=1)
+        elif not existing.get('name'):
+            db_add_attendee(email, name=fallback_name, quantity=existing.get('quantity', 1), category=existing.get('category', 'Male Stag'))
 
-    attendee_name, times_scanned, last_scan = db_record_checkin(
-        email=email,
-        scan_id=scan_id,
-        device_id=device_id,
-        ip=ip,
-        device_type=parsed["deviceType"],
-        os_name=parsed["os"],
-        browser=parsed["browser"],
-        scanned_at=scanned_at,
-    )
+        attendee_name, times_scanned, last_scan = db_record_checkin(
+            email=email,
+            scan_id=scan_id,
+            device_id=device_id,
+            ip=ip,
+            device_type=parsed["deviceType"],
+            os_name=parsed["os"],
+            browser=parsed["browser"],
+            scanned_at=scanned_at,
+        )
 
-    is_rescan = times_scanned > 0
+        is_rescan = times_scanned > 0
 
-    attendee_display_name = attendee_name or (db_get_attendee(email) or {}).get('name') or email.split("@")[0].capitalize()
+        attendee_display_name = attendee_name or (db_get_attendee(email) or {}).get('name') or email.split("@")[0].capitalize()
 
-    event_payload: dict = {
-        "type": "already_approved" if is_rescan else "approved",
-        "scanId": scan_id,
-        "deviceId": device_id,
-        "email": email,
-        "name": attendee_display_name,
-        "ip": ip,
-        "deviceType": parsed["deviceType"],
-        "os": parsed["os"],
-        "browser": parsed["browser"],
-        "userAgent": ua,
-        "language": language,
-        "approvedAt": scanned_at_display,
-        "approvedAtRaw": scanned_at,
-        "timesScanned": times_scanned + 1,
-    }
-    if is_rescan:
-        event_payload["lastScan"] = format_ist_datetime(last_scan) if last_scan else scanned_at_display
-        event_payload["newScan"] = scanned_at_display
+        event_payload: dict = {
+            "type": "already_approved" if is_rescan else "approved",
+            "scanId": scan_id,
+            "deviceId": device_id,
+            "email": email,
+            "name": attendee_display_name,
+            "ip": ip,
+            "deviceType": parsed["deviceType"],
+            "os": parsed["os"],
+            "browser": parsed["browser"],
+            "userAgent": ua,
+            "language": language,
+            "approvedAt": scanned_at_display,
+            "approvedAtRaw": scanned_at,
+            "timesScanned": times_scanned + 1,
+        }
+        if is_rescan:
+            event_payload["lastScan"] = format_ist_datetime(last_scan) if last_scan else scanned_at_display
+            event_payload["newScan"] = scanned_at_display
 
-    for q in subscribers:
-        q.put_nowait(event_payload)
+        _scan_logger.info(f"[checkin] recorded ok: {email} timesScanned={times_scanned + 1} subscribers={len(subscribers)}")
 
-    _log_scan({**event_payload, "rescan": is_rescan})
+        for q in subscribers:
+            q.put_nowait(event_payload)
 
-    rotate_token(current_base_url)
+        _log_scan({**event_payload, "rescan": is_rescan})
 
-    return {
-        "ok": True,
-        "name": attendee_display_name,
-        "email": email,
-        "scannedAt": scanned_at_display,
-        "scannedAtRaw": scanned_at,
-        "timesScanned": times_scanned + 1,
-        "isRescan": is_rescan,
-    }
+        rotate_token(current_base_url)
+
+        return {
+            "ok": True,
+            "name": attendee_display_name,
+            "email": email,
+            "scannedAt": scanned_at_display,
+            "scannedAtRaw": scanned_at,
+            "timesScanned": times_scanned + 1,
+            "isRescan": is_rescan,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.getLogger("uvicorn.error").exception(f"[checkin] failed for {email}")
+        _scan_logger.info(f"[checkin] ERROR for {email}: {e}")
+        raise HTTPException(status_code=500, detail=f"Check-in failed on the server: {e}")
 
 
 @app.get("/scan/{token}", response_class=HTMLResponse)

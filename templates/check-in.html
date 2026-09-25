@@ -670,17 +670,21 @@
     }
 
     es = new EventSource('/events');
+    es.onopen = function () {
+      console.log('[check-in] SSE connected');
+    };
     es.onmessage = function (e) {
       const data = JSON.parse(e.data);
+      console.log('[check-in] SSE event:', data.type, data);
       if (data.type === 'token') {
         applyQrToken(data);
       } else if (data.type === 'approved' || data.type === 'already_approved') {
         showScanToast(data);
-        showVerifiedPopup(data);
-        loadAttendees();
+        loadAttendees(); // triggers checkForNewScans, which fires the verified popup
       }
     };
-    es.onerror = function () {
+    es.onerror = function (e) {
+      console.warn('[check-in] SSE error/disconnected, will reconnect in 1.5s', e);
       refreshQrToken();
       setTimeout(startEventStream, 1500);
     };
@@ -866,8 +870,43 @@
       const data = await res.json();
       logData = data.attendees || [];
       filterAndRender();
+      checkForNewScans(logData);
     } catch (_) {}
   }
+
+  // ── Polling fallback: guarantees the popup fires even if the SSE push
+  // connection is down, dropped, or missed the event for any reason. ──
+  let scanCounts = null; // email -> times_scanned, seeded on first load
+
+  function checkForNewScans(attendees) {
+    if (scanCounts === null) {
+      // First load: just seed the baseline, don't fire popups for history.
+      scanCounts = {};
+      attendees.forEach(function (a) {
+        scanCounts[a.email] = parseInt(a.times_scanned) || 0;
+      });
+      return;
+    }
+    attendees.forEach(function (a) {
+      const email = a.email;
+      const count = parseInt(a.times_scanned) || 0;
+      const prevCount = scanCounts.hasOwnProperty(email) ? scanCounts[email] : 0;
+      if (count > prevCount) {
+        console.log('[check-in] Polling detected new scan for', email);
+        const payload = {
+          type: prevCount > 0 ? 'already_approved' : 'approved',
+          name: a.name,
+          email: email,
+          approvedAt: a.last_scan
+        };
+        showScanToast(payload);
+        showVerifiedPopup(payload);
+      }
+      scanCounts[email] = count;
+    });
+  }
+
+  setInterval(loadAttendees, 3000);
 
   function filterAndRender() {
     const query = searchInput.value.trim().toLowerCase();
