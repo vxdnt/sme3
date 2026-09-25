@@ -2,6 +2,7 @@ import logging
 import secrets
 import time
 from datetime import datetime
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -41,13 +42,13 @@ class CheckInBody(BaseModel):
 
 
 def _ticket_url(attendee: dict) -> str:
-    return (
-        f"{state.current_base_url}/ticket"
-        f"?email={attendee['email']}"
-        f"&name={attendee.get('name', '')}"
-        f"&qty={attendee.get('quantity', 1)}"
-        f"&cat={attendee.get('category', 'Male Stag')}"
-    )
+    params = {
+        "email": attendee.get("email", ""),
+        "name": attendee.get("name", ""),
+        "qty": attendee.get("quantity", 1),
+        "cat": attendee.get("category", "Male Stag"),
+    }
+    return f"{state.current_base_url}/ticket?{urlencode(params)}"
 
 
 @router.get("/qr")

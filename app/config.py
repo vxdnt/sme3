@@ -39,3 +39,4 @@ def detect_lan_ip() -> str:
 
 LAN_IP: str = detect_lan_ip()
 BASE_URL: str = f"http://{LAN_IP}:8000"
+APP_BASE_URL: str = os.getenv("APP_BASE_URL", BASE_URL).strip()
