@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Allow: /careers/
+Allow: /privacy/
+Allow: /terms/
+
+# Internal event ticketing and admin check-in (do not index)
+Disallow: /checkin
+Disallow: /ticket
+Disallow: /generator
+Disallow: /scan/
+Disallow: /events
+Disallow: /api/
+
+Sitemap: https://sortmyentries.in/sitemap.xml

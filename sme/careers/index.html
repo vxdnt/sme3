@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Careers - SortMyEntries</title>
+
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-S3HLE5BZK0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-S3HLE5BZK0');
+  </script>
+
+  <meta property="og:title" content="Careers at SortMyEntries">
+  <meta property="og:description"
+    content="Join us in reimagining India's event experience. We're hiring passionate builders.">
+  <meta property="og:image" content="https://sortmyentries.in/android-chrome-512x512.png">
+  <meta name="description"
+    content="Join us in reimagining India's event experience. We're hiring passionate builders.">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #fafbfc;
+      color: #000;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      margin-bottom: 60px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 600;
+      color: #222;
+      text-decoration: none;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: #f0f0f0;
+      color: #666;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 3px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: #666;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      font-size: 32px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 40px;
+      letter-spacing: -0.02em;
+    }
+
+    .roles-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .roles-header h2 {
+      margin-bottom: 0;
+    }
+
+    .role-count {
+      font-size: 14px;
+      color: #999;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .filter-tab {
+      padding: 8px 16px;
+      border: 1px solid #e0e0e0;
+      background: white;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-tab:hover {
+      border-color: #ccc;
+      color: #222;
+    }
+
+    .filter-tab.active {
+      background-color: #222;
+      border-color: #222;
+      color: white;
+    }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .role-card.hidden {
+      display: none;
+    }
+
+    .category-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    .role-card {
+      background: white;
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      padding: 28px;
+      transition: all 0.2s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .role-card:hover {
+      border-color: #ccc;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .role-header {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .role-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 4px;
+    }
+
+    .role-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .role-type {
+      font-size: 11px;
+      color: #666;
+      padding: 4px 8px;
+      background-color: #f5f5f5;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    .role-type.unpaid {
+      background-color: #fff3e0;
+      color: #ef6c00;
+    }
+
+    .role-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .role-requirements {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .requirements-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 8px;
+    }
+
+    .role-requirements ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 16px;
+    }
+
+    .role-requirements li {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .role-requirements li:before {
+      content: "•";
+      position: absolute;
+      left: 8px;
+      color: #999;
+    }
+
+    .role-apply-btn {
+      width: 100%;
+      padding: 10px 16px;
+      background-color: #222;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .role-apply-btn:hover {
+      background-color: #000;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 6px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 40px;
+      position: relative;
+      animation: modalIn 0.2s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      border: 1px solid #e0e0e0;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #666;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      border-color: #ccc;
+      color: #222;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 4px;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .form-label.required:after {
+      content: " *";
+      color: #ef6c00;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: #999;
+    }
+
+    .form-select:disabled {
+      background-color: #fafafa;
+      color: #222;
+      font-weight: 500;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    .btn-primary {
+      padding: 12px 24px;
+      border: 1px solid #222;
+      background-color: #222;
+      color: white;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      background-color: #000;
+      border-color: #000;
+    }
+
+    .btn-primary:disabled {
+      background-color: #ccc;
+      border-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      text-align: center;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .status-message.success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+      display: block;
+    }
+
+    .status-message.error {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+      display: block;
+    }
+
+    footer {
+      margin-top: 100px;
+      padding-top: 40px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-brand {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 4px;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 12px;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #e0e0e0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .social-link:hover {
+      border-color: #ccc;
+      color: #222;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 36px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+
+      .roles-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-box {
+        padding: 28px 20px;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="header-top">
+        <a href="/" class="logo">SortMyEntries</a>
+      </div>
+    </header>
+
+    <div class="hero">
+      <span class="badge">We're Hiring</span>
+      <h1>Build the Future With Us</h1>
+      <p class="hero-subtitle">We're assembling a remote team of builders — students, early-career, or self-taught — to reimagine how India experiences events. Real ownership, real product.</p>
+    </div>
+
+    <section style="margin-bottom: 80px;">
+      <div class="roles-header">
+        <h2>Open Internships</h2>
+        <span class="role-count" id="roleCount">7 open roles</span>
+      </div>
+
+      <div class="filter-tabs" id="filterTabs">
+        <button class="filter-tab active" data-category="all" onclick="filterRoles('all', this)">All</button>
+        <button class="filter-tab" data-category="engineering" onclick="filterRoles('engineering', this)">Engineering</button>
+        <button class="filter-tab" data-category="ai" onclick="filterRoles('ai', this)">AI</button>
+        <button class="filter-tab" data-category="growth-ops" onclick="filterRoles('growth-ops', this)">Growth &amp; Ops</button>
+      </div>
+
+      <div class="roles-grid" id="rolesGrid">
+
+        <div class="role-card" data-category="engineering">
+          <div class="role-header">
+            <div>
+              <span class="category-badge">Engineering</span>
+              <div class="role-title">Frontend Developer Intern</div>
+            </div>
+            <div class="role-tags">
+              <span class="role-type">Internship</span>
+              <span class="role-type">Remote</span>
+              <span class="role-type unpaid">Unpaid</span>
+            </div>
+          </div>
+          <p class="role-description">Build clean, responsive interfaces for event discovery, checkout, and organizer dashboards.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Working knowledge of HTML5, CSS3, and JavaScript</li>
+              <li>Familiarity with Jinja2 or similar templating engines</li>
+              <li>Eye for clean, minimal design</li>
+              <li>Comfort navigating an existing codebase independently</li>
+            </ul>
+            <button class="role-apply-btn" onclick="openModal('Frontend Developer Intern')">Apply Now</button>
+          </div>
+        </div>
+
+        <div class="role-card" data-category="engineering">
+          <div class="role-header">
+            <div>
+              <span class="category-badge">Engineering</span>
+              <div class="role-title">Backend Developer Intern</div>
+            </div>
+            <div class="role-tags">
+              <span class="role-type">Internship</span>
+              <span class="role-type">Remote</span>
+              <span class="role-type unpaid">Unpaid</span>
+            </div>
+          </div>
+          <p class="role-description">Work on our Flask APIs, database models, authentication, and core platform logic.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Working knowledge of Python and Flask</li>
+              <li>Familiarity with SQLAlchemy and relational databases</li>
+              <li>Understanding of RESTful API design</li>
+              <li>Exposure to authentication flows is a plus</li>
+            </ul>
+            <button class="role-apply-btn" onclick="openModal('Backend Developer Intern')">Apply Now</button>
+          </div>
+        </div>
+
+        <div class="role-card" data-category="engineering">
+          <div class="role-header">
+            <div>
+              <span class="category-badge">Engineering</span>
+              <div class="role-title">Fullstack Developer Intern</div>
+            </div>
+            <div class="role-tags">
+              <span class="role-type">Internship</span>
+              <span class="role-type">Remote</span>
+              <span class="role-type unpaid">Unpaid</span>
+            </div>
+          </div>
+          <p class="role-description">Ship end-to-end features across our Flask backend and frontend, from database schema to UI.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Working knowledge of Python/Flask and JavaScript/HTML/CSS</li>
+              <li>Comfort working across the stack</li>
+              <li>Strong problem-solving instincts</li>
+              <li>Genuine interest in product engineering</li>
+            </ul>
+            <button class="role-apply-btn" onclick="openModal('Fullstack Developer Intern')">Apply Now</button>
+          </div>
+        </div>
+
+        <div class="role-card" data-category="ai">
+          <div class="role-header">
+            <div>
+              <span class="category-badge">AI</span>
+              <div class="role-title">AI Developer Intern</div>
+            </div>
+            <div class="role-tags">
+              <span class="role-type">Internship</span>
+              <span class="role-type">Remote</span>
+              <span class="role-type unpaid">Unpaid</span>
+            </div>
+          </div>
+          <p class="role-description">Help build and improve our in-house AI assistant that powers internal operations and platform intelligence.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Working knowledge of Python</li>
+              <li>Familiarity with LLM APIs or AI/ML frameworks</li>
+              <li>Understanding of prompt engineering or RAG pipelines is a plus</li>
+              <li>Curiosity to experiment and iterate quickly</li>
+            </ul>
+            <button class="role-apply-btn" onclick="openModal('AI Developer Intern')">Apply Now</button>
+          </div>
+        </div>
+
+        <div class="role-card" data-category="growth-ops">
+          <div class="role-header">
+            <div>
+              <span class="category-badge">Growth &amp; Ops</span>
+              <div class="role-title">Content/Marketing Intern</div>
+            </div>
+            <div class="role-tags">
+              <span class="role-type">Internship</span>
+              <span class="role-type">Remote</span>
+              <span class="role-type unpaid">Unpaid</span>
+            </div>
+          </div>
+          <p class="role-description">Help tell our story — social media, marketing copy, and community engagement as we grow SortMyEntries.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Strong writing and communication skills</li>
+              <li>Experience with social media platforms</li>
+              <li>Creative thinking and storytelling ability</li>
+              <li>Basic design skills (Canva, Figma, etc.) are a plus</li>
+            </ul>
+            <button class="role-apply-btn" onclick="openModal('Content/Marketing Intern')">Apply Now</button>
+          </div>
+        </div>
+
+        <div class="role-card" data-category="engineering">
+          <div class="role-header">
+            <div>
+              <span class="category-badge">Engineering</span>
+              <div class="role-title">Cloud Engineer Intern</div>
+            </div>
+            <div class="role-tags">
+              <span class="role-type">Internship</span>
+              <span class="role-type">Remote</span>
+              <span class="role-type unpaid">Unpaid</span>
+            </div>
+          </div>
+          <p class="role-description">Support our cloud infrastructure — deployment, storage, databases, and security as we scale on AWS.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Working knowledge of core AWS services (EC2, S3, RDS, IAM)</li>
+              <li>Understanding of cloud networking and security basics</li>
+              <li>Familiarity with deployment and CI/CD concepts</li>
+              <li>AWS certification (or in progress) is a plus</li>
+            </ul>
+            <button class="role-apply-btn" onclick="openModal('Cloud Engineer Intern')">Apply Now</button>
+          </div>
+        </div>
+
+        <div class="role-card" data-category="growth-ops">
+          <div class="role-header">
+            <div>
+              <span class="category-badge">Growth &amp; Ops</span>
+              <div class="role-title">Product/Ops Intern</div>
+            </div>
+            <div class="role-tags">
+              <span class="role-type">Internship</span>
+              <span class="role-type">Remote</span>
+              <span class="role-type unpaid">Unpaid</span>
+            </div>
+          </div>
+          <p class="role-description">Support day-to-day operations, event onboarding, and product coordination as we grow SortMyEntries.</p>
+          <div class="role-requirements">
+            <div class="requirements-title">What we're looking for:</div>
+            <ul>
+              <li>Strong organizational and communication skills</li>
+              <li>Comfort working across teams and juggling priorities</li>
+              <li>Interest in product thinking and user experience</li>
+              <li>Basic familiarity with tools like Notion, Sheets, or Trello</li>
+            </ul>
+            <button class="role-apply-btn" onclick="openModal('Product/Ops Intern')">Apply Now</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-content">
+        <div>
+          <div class="footer-brand">SortMyEntries</div>
+        </div>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/company/sortmyentries/" class="social-link" target="_blank" aria-label="LinkedIn">
+            <i class="bi bi-linkedin"></i>
+          </a>
+          <a href="https://www.instagram.com/sortmyentries" class="social-link" target="_blank" aria-label="Instagram">
+            <i class="bi bi-instagram"></i>
+          </a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2025 SortMyEntries. All rights reserved. | Mumbai, India
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Application Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-box">
+      <div class="modal-close" onclick="closeModal()"><i class="bi bi-x-lg"></i></div>
+
+      <h3 class="section-title">Apply Now</h3>
+      <p class="section-subtitle">Fill out the form below and we'll get back to you within 48 hours.</p>
+
+      <form id="applicationForm">
+        <div class="form-group">
+          <label for="name" class="form-label required">Full Name</label>
+          <input type="text" class="form-input" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label required">Email Address</label>
+          <input type="email" class="form-input" id="email" name="_replyto" required>
+        </div>
+
+        <div class="form-group">
+          <label for="role" class="form-label required">Role You're Applying For</label>
+          <select class="form-select" id="role" name="role" required disabled>
+            <option value="Frontend Developer Intern">Frontend Developer Intern</option>
+            <option value="Backend Developer Intern">Backend Developer Intern</option>
+            <option value="Fullstack Developer Intern">Fullstack Developer Intern</option>
+            <option value="AI Developer Intern">AI Developer Intern</option>
+            <option value="Content/Marketing Intern">Content/Marketing Intern</option>
+            <option value="Cloud Engineer Intern">Cloud Engineer Intern</option>
+            <option value="Product/Ops Intern">Product/Ops Intern</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cvlink" class="form-label required">CV / Resume Link</label>
+          <input type="url" class="form-input" id="cvlink" name="cvlink" placeholder="https://drive.google.com/..." required>
+          <div class="form-hint">Upload your CV to Google Drive or Dropbox and share a PUBLIC link (our system needs access to process your application)</div>
+        </div>
+
+        <div class="form-group">
+          <label for="portfolio" class="form-label">Portfolio / GitHub</label>
+          <input type="url" class="form-input" id="portfolio" name="portfolio" placeholder="https://github.com/...">
+          <div class="form-hint">Share your portfolio, GitHub profile, or relevant work samples</div>
+        </div>
+
+        <div class="form-group">
+          <label for="message" class="form-label required">Why Would You Be a Great Fit?</label>
+          <textarea class="form-textarea" id="message" name="message" placeholder="Tell us about your experience, skills, and what excites you about this role..." required></textarea>
+        </div>
+
+        <input type="hidden" name="_subject" value="New Internship Application - SortMyEntries" />
+        <input type="hidden" name="_captcha" value="false" />
+
+        <button type="submit" class="btn-primary" id="submitBtn">
+          <i class="bi bi-send"></i>
+          Submit Application
+        </button>
+
+        <div id="statusMessage" class="status-message"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function filterRoles(category, btn) {
+      document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cards = document.querySelectorAll('.role-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const matches = category === 'all' || card.dataset.category === category;
+        card.classList.toggle('hidden', !matches);
+        if (matches) visibleCount++;
+      });
+
+      document.getElementById('roleCount').textContent =
+        visibleCount + (visibleCount === 1 ? ' open role' : ' open roles');
+    }
+
+    function openModal(roleName) {
+      document.getElementById('role').value = roleName;
+      document.getElementById('modalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function closeModalOnOverlay(e) {
+      if (e.target.id === 'modalOverlay') closeModal();
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    document.getElementById('applicationForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const submitBtn = document.getElementById('submitBtn');
+      const statusMessage = document.getElementById('statusMessage');
+      const data = new FormData(form);
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting...';
+      statusMessage.className = 'status-message';
+      statusMessage.style.display = 'none';
+
+      try {
+        const res = await fetch('https://formspree.io/f/xzzglbde', {
+          method: 'POST',
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          statusMessage.textContent = '✓ Application submitted successfully! We\'ll get back to you soon.';
+          statusMessage.className = 'status-message success';
+          form.reset();
+          setTimeout(closeModal, 1800);
+        } else {
+          throw new Error('Submission failed');
+        }
+      } catch (error) {
+        statusMessage.textContent = '✗ Something went wrong. Please try again or email us directly.';
+        statusMessage.className = 'status-message error';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-send"></i> Submit Application';
+      }
+    });
+  </script>
+</body>
+</html>

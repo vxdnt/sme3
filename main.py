@@ -406,8 +406,12 @@ async def rotation_loop():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"\n[*] LAN address: {BASE_URL}")
+    print(f"    Website (SME Home): {BASE_URL}/")
+    print(f"    Careers:            {BASE_URL}/careers")
+    print(f"    Privacy:            {BASE_URL}/privacy")
+    print(f"    Terms:              {BASE_URL}/terms")
     print(f"    Organizer Check-in: {BASE_URL}/checkin")
-    print(f"    Dynamic QR Display: {BASE_URL}/")
+    print(f"    Dynamic QR Display: {BASE_URL}/generator")
     print(f"    Attendee Ticket:    {BASE_URL}/ticket?email=attendee@example.com&name=Attendee\n")
     init_db()
     rotate_token(BASE_URL)
@@ -456,6 +460,8 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(GracefulShutdownMiddleware)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+SME_DIR = Path("sme")
+
 
 def get_base_url(request: Request) -> str:
     return str(request.base_url).rstrip("/")
@@ -469,23 +475,104 @@ def _to_json(d: dict) -> str:
     return json.dumps(d)
 
 
+# ── SortMyEntries Website Routes ──
+
 @app.get("/", response_class=HTMLResponse)
+async def sme_home():
+    return (SME_DIR / "index.html").read_text(encoding="utf-8")
+
+
+@app.get("/careers", response_class=HTMLResponse)
+@app.get("/careers/", response_class=HTMLResponse)
+async def sme_careers():
+    return (SME_DIR / "careers" / "index.html").read_text(encoding="utf-8")
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+@app.get("/privacy/", response_class=HTMLResponse)
+async def sme_privacy():
+    return (SME_DIR / "privacy" / "index.html").read_text(encoding="utf-8")
+
+
+@app.get("/terms", response_class=HTMLResponse)
+@app.get("/terms/", response_class=HTMLResponse)
+async def sme_terms():
+    return (SME_DIR / "terms" / "index.html").read_text(encoding="utf-8")
+
+
+@app.get("/robots.txt")
+async def robots_txt():
+    return FileResponse(SME_DIR / "robots.txt", media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+async def sitemap_xml():
+    return FileResponse(SME_DIR / "sitemap.xml", media_type="application/xml")
+
+
+@app.get("/site.webmanifest")
+async def site_manifest():
+    return FileResponse(SME_DIR / "site.webmanifest", media_type="application/manifest+json")
+
+
+@app.get("/favicon.ico")
+async def favicon_ico():
+    return FileResponse(SME_DIR / "favicon.ico")
+
+
+@app.get("/favicon-16x16.png")
+async def favicon_16():
+    return FileResponse(SME_DIR / "favicon-16x16.png")
+
+
+@app.get("/favicon-32x32.png")
+async def favicon_32():
+    return FileResponse(SME_DIR / "favicon-32x32.png")
+
+
+@app.get("/apple-touch-icon.png")
+async def apple_touch_icon():
+    return FileResponse(SME_DIR / "apple-touch-icon.png")
+
+
+@app.get("/android-chrome-192x192.png")
+async def android_chrome_192():
+    return FileResponse(SME_DIR / "android-chrome-192x192.png")
+
+
+@app.get("/android-chrome-512x512.png")
+async def android_chrome_512():
+    return FileResponse(SME_DIR / "android-chrome-512x512.png")
+
+
+@app.get("/CNAME")
+async def cname():
+    return FileResponse(SME_DIR / "CNAME", media_type="text/plain")
+
+
+# ── Dynamic QR & Ticketing Routes ──
+
+@app.get("/generator", response_class=HTMLResponse)
+@app.get("/display", response_class=HTMLResponse)
 async def generator_page(request: Request):
     global current_base_url
     req_base = get_base_url(request)
     if req_base != current_base_url and not _is_local(req_base):
         rotate_token(req_base)
-    return Path("static/generator.html").read_text(encoding="utf-8")
+    content = Path("static/generator.html").read_text(encoding="utf-8")
+    return HTMLResponse(content, headers={"X-Robots-Tag": "noindex, nofollow"})
 
 
 @app.get("/checkin", response_class=HTMLResponse)
 async def checkin_page():
-    return Path("check-in.html").read_text(encoding="utf-8")
+    content = Path("check-in.html").read_text(encoding="utf-8")
+    return HTMLResponse(content, headers={"X-Robots-Tag": "noindex, nofollow"})
 
 
 @app.get("/ticket", response_class=HTMLResponse)
 async def ticket_page():
-    return Path("static/ticket.html").read_text(encoding="utf-8")
+    content = Path("ticket.html").read_text(encoding="utf-8")
+    return HTMLResponse(content, headers={"X-Robots-Tag": "noindex, nofollow"})
 
 
 @app.get("/BFISS.jpg")
@@ -777,12 +864,15 @@ async def scan_redirect(token: str):
             <p class="sub">This QR code has rotated.<br>Please scan the latest code on the display.</p>
             """),
             status_code=410,
+            headers={"X-Robots-Tag": "noindex, nofollow"},
         )
     return HTMLResponse(
         f"""<!DOCTYPE html><html><head>
+        <meta name="robots" content="noindex, nofollow">
         <meta http-equiv="refresh" content="0;url=/ticket?token={token}">
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        </head><body><p style="font-family:sans-serif;text-align:center;margin-top:40px;">Opening ticket…</p></body></html>"""
+        </head><body><p style="font-family:sans-serif;text-align:center;margin-top:40px;">Opening ticket…</p></body></html>""",
+        headers={"X-Robots-Tag": "noindex, nofollow"},
     )
 
 
@@ -859,7 +949,9 @@ def _log_scan(data: dict) -> None:
 
 def render_result_page(title: str, body: str) -> str:
     return f"""<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
