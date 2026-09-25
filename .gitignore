@@ -1,0 +1,25 @@
+# Environment variables (contains Neon DB & Resend secrets)
+.env
+
+# SQLite local database
+*.db
+*.sqlite3
+
+# Log files
+*.log
+scans.log
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

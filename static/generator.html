@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dynamic QR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
+    background: #0a0a0f;
+    color: #eee;
+  }
+
+  h1 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 4px;
+  }
+
+  .qr-card {
+    background: #13131a;
+    border: 1px solid #1e1e2e;
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+  }
+
+  #qr {
+    background: #fff;
+    padding: 14px;
+    border-radius: 12px;
+    width: 224px; height: 224px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #qr img { width: 100%; height: 100%; display: block; }
+
+  #bar {
+    width: 224px; height: 5px;
+    background: #1e1e2e; border-radius: 3px; overflow: hidden;
+  }
+  #bar-fill {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    transition: width 0.15s linear;
+    border-radius: 3px;
+  }
+
+  #status {
+    font-size: 13px;
+    color: #555;
+    min-height: 18px;
+    letter-spacing: 0.02em;
+  }
+
+  #overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  #overlay.show { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .verified-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px 28px 24px;
+    width: min(380px, 92vw);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.12);
+    animation: slideUp 0.25s cubic-bezier(0.2,0,0,1);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Roboto', system-ui, sans-serif;
+    color: #202124;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .verified-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    height: 3px;
+    width: 100%;
+    background: #1a73e8;
+    animation: shrink 10s linear forwards;
+    border-radius: 0 2px 2px 0;
+  }
+  @keyframes shrink {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+
+  .vc-icon {
+    width: 52px; height: 52px;
+    background: #e8f0fe;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    color: #1a73e8;
+    font-size: 24px;
+  }
+
+  .vc-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+    margin-bottom: 4px;
+    font-family: 'Google Sans', 'Roboto', sans-serif;
+  }
+
+  .vc-sub {
+    text-align: center;
+    font-size: 13px;
+    color: #5f6368;
+    margin-bottom: 24px;
+  }
+
+  .device-badge {
+    background: #f8f9fa;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .device-badge-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .device-badge-value {
+    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-size: 13px;
+    color: #202124;
+    word-break: break-all;
+    font-weight: 400;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .detail-item {
+    background: #f8f9fa;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .detail-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 2px;
+  }
+  .detail-value {
+    font-size: 13px;
+    color: #202124;
+    word-break: break-all;
+  }
+
+  .vc-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #80868b;
+  }
+
+  .verified-card.already .vc-icon { background: #fef7e0; color: #f9ab00; }
+  .verified-card.already::before { background: #f9ab00; }
+  .verified-card.already .vc-title { color: #202124; }
+  .vc-badge {
+    display: block;
+    color: #b06000;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 100px;
+    padding: 2px 10px;
+    margin: 0 auto 16px;
+    letter-spacing: 0.03em;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <div id="overlay">
+    <div class="verified-card" id="vc">
+      <div class="vc-icon" id="vc-icon">✓</div>
+      <div class="vc-title" id="vc-title">Device Verified</div>
+      <div id="vc-badge-wrap"></div>
+      <div class="vc-sub" id="vc-sub">Disappears automatically in 10 seconds</div>
+
+      <div class="device-badge">
+        <div class="device-badge-label">Device&nbsp;ID</div>
+        <div class="device-badge-value" id="p-id">—</div>
+      </div>
+
+      <div class="detail-grid" id="p-detail-grid"></div>
+    </div>
+  </div>
+
+  <h1>Sortmyentries</h1>
+  <div class="qr-card">
+    <div id="qr"><img id="qr-img" alt="QR code"></div>
+    <div id="bar"><div id="bar-fill"></div></div>
+    <div id="status">waiting for scan…</div>
+  </div>
+
+<script>
+const imgEl      = document.getElementById("qr-img");
+const barFill    = document.getElementById("bar-fill");
+const statusEl   = document.getElementById("status");
+const overlay    = document.getElementById("overlay");
+
+let expiresAt    = Date.now() + 15000;
+let isPaused     = false;
+let latestToken  = null;
+let popupTimeout = null;
+
+const vc        = document.getElementById("vc");
+const vcIcon    = document.getElementById("vc-icon");
+const vcTitle   = document.getElementById("vc-title");
+const vcBadge   = document.getElementById("vc-badge-wrap");
+const vcSub     = document.getElementById("vc-sub");
+const vcGrid    = document.getElementById("p-detail-grid");
+
+function detailItem(label, value, span2 = false) {
+  return `<div class="detail-item"${span2 ? ' style="grid-column:span 2"' : ''}>
+    <div class="detail-label">${label}</div>
+    <div class="detail-value">${value || '—'}</div>
+  </div>`;
+}
+
+function showPopup(data) {
+  const isRescan = data.type === "already_approved";
+
+  vc.classList.toggle("already", isRescan);
+
+  vcIcon.textContent  = isRescan ? "!" : "✓";
+  vcTitle.textContent = isRescan ? "Already Approved" : "Device Verified";
+  vcSub.textContent   = "Disappears automatically in 10 seconds";
+
+  vcBadge.innerHTML = isRescan
+    ? `<div class="vc-badge">Re-scan detected</div>`
+    : "";
+
+  const attendeeDisplay = data.name ? `${data.name} (${data.email})` : (data.deviceId || "—");
+  document.getElementById("p-id").textContent = attendeeDisplay;
+
+  if (isRescan) {
+    vcGrid.innerHTML = detailItem("Last scan", data.lastScan || data.approvedAt, true);
+  } else {
+    vcGrid.innerHTML = detailItem("Check-in Time", data.approvedAt, true);
+  }
+
+  overlay.classList.remove("show");
+  void overlay.offsetWidth;
+  overlay.classList.add("show");
+
+  isPaused = true;
+  statusEl.textContent = "✓ Scan verified – QR resumes in 10s";
+  statusEl.style.color = "#1a73e8";
+  barFill.style.background = "#1a73e8";
+  barFill.style.width = "100%";
+
+  if (popupTimeout) clearTimeout(popupTimeout);
+  popupTimeout = setTimeout(() => {
+    overlay.classList.remove("show");
+    isPaused = false;
+    statusEl.textContent = "waiting for scan…";
+    statusEl.style.color = "#555";
+    barFill.style.background = "linear-gradient(90deg, #6366f1, #8b5cf6)";
+
+    if (latestToken) {
+      imgEl.src = latestToken.qr;
+      expiresAt = latestToken.expiresAt * 1000;
+    }
+  }, 10000);
+}
+
+overlay.addEventListener("click", () => {
+  if (!isPaused) return;
+  if (popupTimeout) { clearTimeout(popupTimeout); popupTimeout = null; }
+  overlay.classList.remove("show");
+  isPaused = false;
+  statusEl.textContent = "waiting for scan…";
+  statusEl.style.color = "#555";
+  barFill.style.background = "linear-gradient(90deg, #6366f1, #8b5cf6)";
+  if (latestToken) {
+    imgEl.src = latestToken.qr;
+    expiresAt = latestToken.expiresAt * 1000;
+  }
+});
+
+const es = new EventSource("/events");
+
+es.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === "token") {
+    latestToken = data;
+    if (!isPaused) {
+      imgEl.src = data.qr;
+      expiresAt = data.expiresAt * 1000;
+    }
+  } else if (data.type === "approved" || data.type === "already_approved") {
+    showPopup(data);
+  }
+};
+
+setInterval(() => {
+  if (!isPaused) {
+    const rem = Math.max(0, expiresAt - Date.now());
+    barFill.style.width = `${(rem / 15000) * 100}%`;
+  }
+}, 100);
+</script>
+</body>
+</html>
