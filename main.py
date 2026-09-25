@@ -13,10 +13,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import qrcode
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import Scope, Receive, Send
 import uvicorn
 
@@ -560,6 +561,74 @@ def load_template(filename: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def custom_404_html(message: str = "We couldn't find that page.") -> str:
+    return f"""<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"UTF-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+  <meta name=\"robots\" content=\"noindex, nofollow\">
+  <title>Page Not Found</title>
+  <style>
+    :root {{
+      --black: #0a0a0a;
+      --white: #ffffff;
+      --gray-500: #6b7280;
+      --accent: #e3544a;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: var(--white);
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--black);
+      text-align: center;
+      padding: 24px;
+    }}
+    h1 {{
+      margin: 0 0 12px;
+      font-size: 2.4rem;
+      color: var(--accent);
+    }}
+    p {{
+      margin: 0 0 24px;
+      color: var(--gray-500);
+      font-size: 1rem;
+    }}
+    a {{
+      text-decoration: none;
+      color: var(--black);
+      font-weight: 600;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 2px;
+    }}
+  </style>
+</head>
+<body>
+  <div>
+    <h1>404</h1>
+    <p>{message}</p>
+    <a href=\"/\">Back to home</a>
+  </div>
+</body>
+</html>
+"""
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        accept = request.headers.get("accept", "")
+        if "application/json" in accept.lower():
+            return JSONResponse({"ok": False, "error": "Not found."}, status_code=404)
+        return HTMLResponse(custom_404_html("The page or API endpoint you requested doesn't exist."), status_code=404)
+    if exc.status_code == 405:
+        return HTMLResponse(custom_404_html("This action is not allowed for this URL."), status_code=405)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+
+
 # ── Dynamic QR & Ticketing Routes ──
 
 @app.get("/generator", response_class=HTMLResponse)
@@ -574,6 +643,17 @@ async def generator_page(request: Request):
 
 
 @app.get("/checkin", response_class=HTMLResponse)
+async def legacy_checkin_page():
+    return RedirectResponse(url="/check-in/big-fat-indian-scam-sangeet", status_code=307)
+
+
+@app.get("/check-in", response_class=HTMLResponse)
+@app.get("/check-in/", response_class=HTMLResponse)
+async def checkin_page_root():
+    return RedirectResponse(url="/check-in/big-fat-indian-scam-sangeet", status_code=307)
+
+
+@app.get("/check-in/big-fat-indian-scam-sangeet", response_class=HTMLResponse)
 async def checkin_page():
     content = load_template("check-in.html")
     return HTMLResponse(content, headers={"X-Robots-Tag": "noindex, nofollow"})
@@ -626,6 +706,24 @@ async def events(request: Request):
             "Connection": "keep-alive",
         },
     )
+
+
+@app.get("/api/qr")
+async def qr_status(request: Request):
+    global current_base_url
+    req_base = get_base_url(request)
+    if req_base != current_base_url and not _is_local(req_base):
+        rotate_token(req_base)
+
+    token_url = f"{current_base_url}/scan/{current_token}"
+    payload = {
+        "type": "token",
+        "token": current_token,
+        "expiresAt": expires_at,
+        "qr": make_qr_data_uri(token_url),
+        "url": token_url,
+    }
+    return JSONResponse(payload)
 
 
 class AttendeeIn(BaseModel):

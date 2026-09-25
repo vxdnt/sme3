@@ -398,7 +398,7 @@
       <p class="block-label">Event</p>
       <div class="columns">
         <div class="flyer">
-          <img src="BFISS.jpg" alt="Big Fat Indian Scam Sangeet Flyer">
+          <img src="/BFISS.jpg" alt="Big Fat Indian Scam Sangeet Flyer">
         </div>
         <div>
           <h2 class="event-name">Big Fat Indian Scam Sangeet</h2>
@@ -556,8 +556,9 @@
   const toastTitle       = document.getElementById('toastTitle');
   const toastDetail      = document.getElementById('toastDetail');
 
-  scanBtn.addEventListener('click', function () {
+  scanBtn.addEventListener('click', async function () {
     qrModalBackdrop.classList.add('open');
+    await refreshQrToken();
   });
 
   closeQrModalBtn.addEventListener('click', function () {
@@ -577,20 +578,40 @@
     }
   }, 100);
 
+  function applyQrToken(data) {
+    if (!data || data.type !== 'token') return;
+    latestToken = data;
+    if (!isPaused) {
+      modalQrImg.src = data.qr || '';
+      expiresAt = Number(data.expiresAt || Date.now() + 15000) * 1000;
+    }
+  }
+
+  async function refreshQrToken() {
+    try {
+      const res = await fetch('/api/qr', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      applyQrToken(data);
+    } catch (_) {}
+  }
+
   const es = new EventSource('/events');
   es.onmessage = function (e) {
     const data = JSON.parse(e.data);
     if (data.type === 'token') {
-      latestToken = data;
-      if (!isPaused) {
-        modalQrImg.src = data.qr;
-        expiresAt = data.expiresAt * 1000;
-      }
+      applyQrToken(data);
     } else if (data.type === 'approved' || data.type === 'already_approved') {
       showScanToast(data);
       loadAttendees();
     }
   };
+  es.onerror = function () {
+    refreshQrToken();
+  };
+
+  setInterval(refreshQrToken, 3000);
+  refreshQrToken();
 
   function showScanToast(data) {
     const isRescan = data.type === 'already_approved';
