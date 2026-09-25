@@ -30,40 +30,41 @@ SortMyEntries is an event listing and ticketing platform designed to help organi
 
 ```text
 DQR-main/
-├── main.py                  # Core FastAPI backend, routing, SSE & database integration
-├── requirements.txt         # Production Python dependencies
-├── render.yaml              # Render deployment configuration
-├── .env.example             # Template for environment secrets
-├── .gitignore               # Protects .env, local SQLite database, and logs
-├── README.md                # Project documentation
+├── main.py                  # App entry (uvicorn main:app)
+├── requirements.txt
+├── render.yaml
+├── .env.example
+├── README.md
 │
-├── templates/               # Event ticketing & check-in HTML views
-│   ├── check-in.html        # Organizer check-in dashboard & attendee manager
-│   ├── ticket.html          # Attendee digital ticket with in-browser scanner
-│   └── generator.html       # Standalone dynamic rotating QR display screen
+├── app/                     # FastAPI application package
+│   ├── factory.py           # create_app(), static mounts, routers
+│   ├── config.py            # Env vars and project paths
+│   ├── db.py                # PostgreSQL / SQLite access
+│   ├── qr.py                # Rotating QR tokens
+│   ├── email_service.py     # Resend ticket emails
+│   └── routes/
+│       ├── sme.py           # Marketing site pages
+│       ├── pages.py         # Check-in, ticket, generator HTML
+│       ├── api.py           # /api/* JSON endpoints
+│       └── events.py        # SSE stream and /scan/{token}
 │
-├── static/                  # Shared media and event assets
-│   ├── BFISS.jpg            # Event flyer banner
-│   └── BFISS2.png           # High-resolution promotional flyer
+├── frontend/                # Ticketing HTML views
+│   ├── check-in.html
+│   ├── ticket.html
+│   ├── generator.html
+│   ├── 404.html
+│   └── expired.html
+│
+├── static/                  # CSS, JS, and event images
+│   ├── css/
+│   ├── js/
+│   └── images/
 │
 └── sme/                     # SortMyEntries corporate website
-    ├── index.html           # Homepage (served at /)
-    ├── robots.txt           # Search crawler directives
-    ├── sitemap.xml          # XML sitemap (Google / Bing)
-    ├── site.webmanifest     # Progressive Web App manifest
-    ├── CNAME                # Custom domain mapping (sortmyentries.in)
-    ├── favicon.ico          # Favicon assets
-    ├── favicon-16x16.png
-    ├── favicon-32x32.png
-    ├── apple-touch-icon.png
-    ├── android-chrome-192x192.png
-    ├── android-chrome-512x512.png
-    ├── careers/
-    │   └── index.html       # Careers & job openings
-    ├── privacy/
-    │   └── index.html       # Privacy policy
-    └── terms/
-        └── index.html       # Terms of service
+    ├── index.html
+    ├── careers/index.html
+    ├── privacy/index.html
+    └── terms/index.html
 ```
 
 ---

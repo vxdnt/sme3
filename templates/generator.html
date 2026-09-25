@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dynamic QR Display</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/generator.css">
+</head>
+<body>
+  <div class="screen">
+    <p class="brand">SortMyEntries · Live Check-In</p>
+    <h1>Scan to check in</h1>
+    <p class="sub">Hold your ticket camera up to this code. It rotates every 15 seconds.</p>
+    <div class="qr-frame">
+      <img id="qrImg" alt="Rotating check-in QR code">
+    </div>
+    <div class="progress"><div class="fill" id="qrProgress"></div></div>
+    <p class="status" id="qrStatus">Connecting…</p>
+  </div>
+  <script src="/static/js/generator.js"></script>
+</body>
+</html>
