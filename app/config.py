@@ -13,7 +13,10 @@ SME_DIR = ROOT_DIR / "sme"
 
 DATABASE_URL: str = os.getenv("DATABASE_URL", "").strip()
 RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "").strip()
+BREVO_API_KEY: str = os.getenv("BREVO_API_KEY", "").strip()
 FROM_EMAIL: str = os.getenv("FROM_EMAIL", "tickets@resend.dev").strip()
+MAIL_DEFAULT_SENDER: str = os.getenv("MAIL_DEFAULT_SENDER", FROM_EMAIL).strip()
+MAIL_REPLY_TO: str = os.getenv("MAIL_REPLY_TO", FROM_EMAIL).strip()
 ROTATE_SECONDS = 15
 SQLITE_PATH = ROOT_DIR / "database.db"
 

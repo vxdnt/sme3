@@ -5,3 +5,5 @@ pillow
 psycopg2-binary
 python-dotenv
 resend
+sib-api-v3-sdk
+sib-api-v3-sdk
