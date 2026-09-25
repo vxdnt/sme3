@@ -471,18 +471,31 @@
     const lastCheckedLine = document.getElementById('lastCheckedLine');
     const lastCheckedTime = document.getElementById('lastCheckedTime');
 
+    // Always DD-MM-YYYY HH:MM:SS in IST. Never throws — falls back to the raw value,
+    // so a formatting hiccup can never suppress the "verified" confirmation below.
     function formatIstTimestamp(value) {
       if (!value) return '—';
-      const raw = String(value).trim();
-      const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
-      const date = new Date(iso.includes('+') ? iso : iso + '+05:30');
-      if (Number.isNaN(date.getTime())) return raw;
-      return new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Asia/Kolkata',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      }).format(date);
+      try {
+        const raw = String(value).trim();
+        const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+        const hasOffset = /[+-]\d{2}:?\d{2}$|Z$/i.test(iso);
+        const date = new Date(hasOffset ? iso : iso + '+05:30');
+        if (Number.isNaN(date.getTime())) return raw;
+        const parts = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).formatToParts(date);
+        const get = t => parts.find(p => p.type === t)?.value || '00';
+        return `${get('day')}-${get('month')}-${get('year')} ${get('hour')}:${get('minute')}:${get('second')}`;
+      } catch (_) {
+        return String(value);
+      }
     }
 
     function showLastCheckedIn(timeStr) {
@@ -607,16 +620,25 @@
           throw new Error(data.detail || data.error || 'Check-in failed');
         }
 
-        // Show popup: "Ticket verified at 3:14 PM"
+        // The server confirmed the check-in — show "verified" immediately.
+        // Everything below is cosmetic (timestamp formatting, badge text) and
+        // is isolated so it can never fall back to an "Error" state once we're here.
         scannerStatus.textContent = 'Ticket verified';
         scanResult.style.display = 'block';
-        scanResult.textContent = 'Ticket verified at ' + formatIstTimestamp(data.scannedAt || data.scannedAtRaw);
 
-        // Update ticket with last checked-in line in green immediately
-        showLastCheckedIn(data.scannedAt || data.scannedAtRaw);
-        lastCheckedLine.classList.add('show');
+        const rawTime = data.scannedAt || data.scannedAtRaw;
+        let displayTime = rawTime || '';
+        try {
+          displayTime = formatIstTimestamp(rawTime);
+        } catch (_) { /* keep raw value */ }
+        scanResult.textContent = 'Ticket verified at ' + displayTime;
 
-        // Close modal and throw back to ticket page after 2 seconds
+        try {
+          showLastCheckedIn(rawTime);
+          lastCheckedLine.classList.add('show');
+        } catch (_) { /* non-critical */ }
+
+        // Close modal and return to the ticket page after 2 seconds
         if (closeTimeout) clearTimeout(closeTimeout);
         closeTimeout = setTimeout(function () {
           closeScanner();
