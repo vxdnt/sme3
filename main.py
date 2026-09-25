@@ -550,6 +550,16 @@ async def cname():
     return FileResponse(SME_DIR / "CNAME", media_type="text/plain")
 
 
+TEMPLATES_DIR = Path("templates")
+
+
+def load_template(filename: str) -> str:
+    path = TEMPLATES_DIR / filename
+    if not path.exists():
+        path = Path(filename)
+    return path.read_text(encoding="utf-8")
+
+
 # ── Dynamic QR & Ticketing Routes ──
 
 @app.get("/generator", response_class=HTMLResponse)
@@ -559,25 +569,25 @@ async def generator_page(request: Request):
     req_base = get_base_url(request)
     if req_base != current_base_url and not _is_local(req_base):
         rotate_token(req_base)
-    content = Path("static/generator.html").read_text(encoding="utf-8")
+    content = load_template("generator.html")
     return HTMLResponse(content, headers={"X-Robots-Tag": "noindex, nofollow"})
 
 
 @app.get("/checkin", response_class=HTMLResponse)
 async def checkin_page():
-    content = Path("check-in.html").read_text(encoding="utf-8")
+    content = load_template("check-in.html")
     return HTMLResponse(content, headers={"X-Robots-Tag": "noindex, nofollow"})
 
 
 @app.get("/ticket", response_class=HTMLResponse)
 async def ticket_page():
-    content = Path("ticket.html").read_text(encoding="utf-8")
+    content = load_template("ticket.html")
     return HTMLResponse(content, headers={"X-Robots-Tag": "noindex, nofollow"})
 
 
 @app.get("/BFISS.jpg")
 async def flyer_jpg():
-    return FileResponse("BFISS.jpg")
+    return FileResponse("static/BFISS.jpg")
 
 
 @app.get("/BFISS2.png")
