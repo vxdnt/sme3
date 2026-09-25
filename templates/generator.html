@@ -308,13 +308,20 @@ function showPopup(data) {
     ? `<div class="vc-badge">Re-scan detected</div>`
     : "";
 
-  const attendeeDisplay = data.name ? `${data.name} (${data.email})` : (data.deviceId || "—");
-  document.getElementById("p-id").textContent = attendeeDisplay;
+  const attendeeName = data.name || "—";
+  const attendeeEmail = data.email || "—";
+  document.getElementById("p-id").textContent = attendeeName;
 
   if (isRescan) {
-    vcGrid.innerHTML = detailItem("Last scan", formatIstTimestamp(data.lastScan || data.approvedAt || data.approvedAtRaw), true);
+    vcGrid.innerHTML =
+      detailItem("Name", attendeeName) +
+      detailItem("Email", attendeeEmail) +
+      detailItem("Last scan", formatIstTimestamp(data.lastScan || data.approvedAt || data.approvedAtRaw), true);
   } else {
-    vcGrid.innerHTML = detailItem("Check-in Time", formatIstTimestamp(data.approvedAt || data.approvedAtRaw), true);
+    vcGrid.innerHTML =
+      detailItem("Name", attendeeName) +
+      detailItem("Email", attendeeEmail) +
+      detailItem("Check-in Time", formatIstTimestamp(data.approvedAt || data.approvedAtRaw), true);
   }
 
   overlay.classList.remove("show");
@@ -356,20 +363,32 @@ overlay.addEventListener("click", () => {
   }
 });
 
-const es = new EventSource("/events");
+let es = null;
 
-es.onmessage = (e) => {
-  const data = JSON.parse(e.data);
-  if (data.type === "token") {
-    latestToken = data;
-    if (!isPaused) {
-      imgEl.src = data.qr;
-      expiresAt = data.expiresAt * 1000;
-    }
-  } else if (data.type === "approved" || data.type === "already_approved") {
-    showPopup(data);
+function startEventStream() {
+  if (es) {
+    es.close();
   }
-};
+
+  es = new EventSource("/events");
+  es.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === "token") {
+      latestToken = data;
+      if (!isPaused) {
+        imgEl.src = data.qr;
+        expiresAt = data.expiresAt * 1000;
+      }
+    } else if (data.type === "approved" || data.type === "already_approved") {
+      showPopup(data);
+    }
+  };
+  es.onerror = () => {
+    setTimeout(startEventStream, 1200);
+  };
+}
+
+startEventStream();
 
 setInterval(() => {
   if (!isPaused) {

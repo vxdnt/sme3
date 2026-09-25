@@ -608,12 +608,13 @@
         }
 
         // Show popup: "Ticket verified at 3:14 PM"
-        scannerStatus.textContent = '';
+        scannerStatus.textContent = 'Ticket verified';
         scanResult.style.display = 'block';
         scanResult.textContent = 'Ticket verified at ' + formatIstTimestamp(data.scannedAt || data.scannedAtRaw);
 
-        // Update ticket with last checked-in line in green
+        // Update ticket with last checked-in line in green immediately
         showLastCheckedIn(data.scannedAt || data.scannedAtRaw);
+        lastCheckedLine.classList.add('show');
 
         // Close modal and throw back to ticket page after 2 seconds
         if (closeTimeout) clearTimeout(closeTimeout);

@@ -595,20 +595,30 @@
     } catch (_) {}
   }
 
-  const es = new EventSource('/events');
-  es.onmessage = function (e) {
-    const data = JSON.parse(e.data);
-    if (data.type === 'token') {
-      applyQrToken(data);
-    } else if (data.type === 'approved' || data.type === 'already_approved') {
-      showScanToast(data);
-      loadAttendees();
-    }
-  };
-  es.onerror = function () {
-    refreshQrToken();
-  };
+  let es = null;
 
+  function startEventStream() {
+    if (es) {
+      es.close();
+    }
+
+    es = new EventSource('/events');
+    es.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+      if (data.type === 'token') {
+        applyQrToken(data);
+      } else if (data.type === 'approved' || data.type === 'already_approved') {
+        showScanToast(data);
+        loadAttendees();
+      }
+    };
+    es.onerror = function () {
+      refreshQrToken();
+      setTimeout(startEventStream, 1500);
+    };
+  }
+
+  startEventStream();
   setInterval(refreshQrToken, 3000);
   refreshQrToken();
 

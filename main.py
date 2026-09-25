@@ -150,6 +150,8 @@ def ensure_demo_attendee_exists():
     attendee = db_get_attendee(demo_email)
     if not attendee:
         db_add_attendee(demo_email, 'Attendee', 1, 'Male Stag')
+    elif not attendee.get('name'):
+        db_add_attendee(demo_email, 'Attendee', attendee.get('quantity', 1), attendee.get('category', 'Male Stag'))
 
 
 def db_add_attendee(email: str, name: str, quantity: int, category: str = "Male Stag"):
@@ -315,6 +317,8 @@ def db_get_attendee(email: str):
 
 def db_record_checkin(email: str, scan_id: str, device_id: str, ip: str, device_type: str, os_name: str, browser: str, scanned_at: str):
     email = email.lower().strip()
+    attendee = db_get_attendee(email) or {}
+    attendee_name = (attendee.get('name') or email.split('@')[0].capitalize() or '').strip()
     if IS_POSTGRES:
         conn = get_pg_connection()
         try:
@@ -322,7 +326,8 @@ def db_record_checkin(email: str, scan_id: str, device_id: str, ip: str, device_
                 with conn.cursor() as cur:
                     cur.execute("SELECT name FROM attendees WHERE LOWER(email) = %s;", (email,))
                     row = cur.fetchone()
-                    attendee_name = row["name"] if row else ""
+                    if row and row.get('name'):
+                        attendee_name = row['name']
 
                     cur.execute("SELECT COUNT(*) AS cnt, MAX(scanned_at) AS last FROM check_ins WHERE LOWER(email) = %s;", (email,))
                     stat = cur.fetchone()
@@ -342,7 +347,8 @@ def db_record_checkin(email: str, scan_id: str, device_id: str, ip: str, device_
             with conn:
                 cur = conn.execute("SELECT name FROM attendees WHERE LOWER(email) = ?;", (email,))
                 row = cur.fetchone()
-                attendee_name = row["name"] if row else ""
+                if row and row["name"]:
+                    attendee_name = row["name"]
 
                 cur = conn.execute("SELECT COUNT(*) AS cnt, MAX(scanned_at) AS last FROM check_ins WHERE LOWER(email) = ?;", (email,))
                 stat = cur.fetchone()
@@ -952,8 +958,11 @@ async def api_checkin(body: CheckInBody, request: Request, response: Response):
     scanned_at_display = format_ist_datetime(scanned_at)
 
     existing = db_get_attendee(email)
+    fallback_name = (body.email.split('@')[0].capitalize()) if body.email else 'Attendee'
     if not existing:
-        db_add_attendee(email, name="", quantity=1)
+        db_add_attendee(email, name=fallback_name, quantity=1)
+    elif not existing.get('name'):
+        db_add_attendee(email, name=fallback_name, quantity=existing.get('quantity', 1), category=existing.get('category', 'Male Stag'))
 
     attendee_name, times_scanned, last_scan = db_record_checkin(
         email=email,
@@ -968,12 +977,14 @@ async def api_checkin(body: CheckInBody, request: Request, response: Response):
 
     is_rescan = times_scanned > 0
 
+    attendee_display_name = attendee_name or (db_get_attendee(email) or {}).get('name') or email.split("@")[0].capitalize()
+
     event_payload: dict = {
         "type": "already_approved" if is_rescan else "approved",
         "scanId": scan_id,
         "deviceId": device_id,
         "email": email,
-        "name": attendee_name or email.split("@")[0].capitalize(),
+        "name": attendee_display_name,
         "ip": ip,
         "deviceType": parsed["deviceType"],
         "os": parsed["os"],
@@ -997,7 +1008,7 @@ async def api_checkin(body: CheckInBody, request: Request, response: Response):
 
     return {
         "ok": True,
-        "name": attendee_name,
+        "name": attendee_display_name,
         "email": email,
         "scannedAt": scanned_at_display,
         "scannedAtRaw": scanned_at,
