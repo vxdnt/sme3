@@ -25,8 +25,22 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 16px;
   }
   .header-left { display: flex; align-items: center; }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .header-action-btn {
+    padding: 10px 16px;
+    font-size: 0.74rem;
+    width: auto;
+    min-width: 0;
+  }
   .header span { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.01em; }
   .header .dot {
     display: inline-block;
@@ -79,6 +93,69 @@
   @media (max-width: 700px) {
     .columns, .columns.even { grid-template-columns: 1fr; gap: 20px; }
     .flyer { max-width: 280px; margin: 0 auto; }
+    .header {
+      padding: 16px 16px;
+    }
+    .header-left {
+      width: 100%;
+    }
+    .header-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .header-action-btn {
+      flex: 1 1 140px;
+    }
+    .table-header {
+      align-items: flex-start;
+    }
+    .table-header-right {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .search-wrap {
+      flex: 1 1 100%;
+    }
+    .search-wrap input[type="text"] {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .page {
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+    .block {
+      padding-top: 28px;
+      padding-bottom: 28px;
+    }
+    .event-name,
+    h1.card-title,
+    h2.card-title {
+      font-size: 1.28rem;
+    }
+    .field-row-split {
+      grid-template-columns: 1fr;
+    }
+    .table-header-right {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .attendee-page {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+    .attendee-toolbar {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .attendee-table-wrap {
+      overflow-x: auto;
+    }
+    .attendee-table-wrap table {
+      min-width: 820px;
+    }
   }
 
   .flyer {
