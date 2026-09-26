@@ -44,6 +44,6 @@
   }, 100);
 
   startEventStream();
-  setInterval(refreshQrToken, 3000);
+  setInterval(refreshQrToken, 15000);
   refreshQrToken();
 })();

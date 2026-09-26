@@ -128,7 +128,7 @@ let logData     = [];
   }
 
   startEventStream();
-  setInterval(refreshQrToken, 3000);
+  setInterval(refreshQrToken, 15000);
   refreshQrToken();
 
   // Always DD-MM-YYYY HH:MM:SS in IST. Never throws — falls back to the raw value.

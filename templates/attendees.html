@@ -4,59 +4,419 @@
   <meta charset="UTF-8">
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Organizer Attendees</title>
+  <title>Organizer Attendees — SortMyEntries</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/static/css/check-in.css">
   <style>
-    body { background: #101418; }
-    .attendee-page { max-width: 1280px; margin: 32px auto; padding: 0 18px 40px; }
-    .attendee-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
-    .attendee-table-wrap { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:18px; overflow:hidden; }
-    .attendee-table-wrap table { width:100%; border-collapse:collapse; }
-    .attendee-table-wrap th, .attendee-table-wrap td { text-align:left; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
-    .attendee-table-wrap th { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:#a7adb4; }
-    .attendee-table-wrap td { color:#e8eaed; }
-    .muted { color:#9aa0a6; }
-    .badge { display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:0.72rem; font-weight:700; }
-    .badge.ok { background: rgba(17, 179, 92, 0.12); color:#79f0ad; }
-    .badge.warn { background: rgba(255, 180, 0, 0.12); color:#ffcf5c; }
-    .link-button { text-decoration:none; }
+    :root {
+      --bg-dark: #0d1117;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --text-main: #f0f3f6;
+      --text-muted: #8b949e;
+      --green-bg: rgba(35, 134, 54, 0.18);
+      --green-text: #3fb950;
+      --yellow-bg: rgba(187, 128, 9, 0.18);
+      --yellow-text: #e3b341;
+      --accent-color: #e3544a;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: "Google Sans", Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top navigation bar */
+    .header {
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .header-brand .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      box-shadow: 0 0 10px rgba(227, 84, 74, 0.8);
+    }
+    .header-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f0f3f6;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .header-back-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+    }
+
+    /* Main container */
+    .attendee-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+    }
+
+    /* Page title & stats header */
+    .page-head {
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: #fff;
+    }
+    .page-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Filter pills & counts */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 16px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .filter-pill.active {
+      background: #fff;
+      color: #0d1117;
+      border-color: #fff;
+    }
+    .filter-pill .pill-count {
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      background: rgba(0, 0, 0, 0.12);
+    }
+    .filter-pill:not(.active) .pill-count {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    /* Search input wrap */
+    .search-container {
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .search-container input {
+      width: 100%;
+      height: 44px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0 16px 0 42px;
+      color: #fff;
+      font-size: 0.92rem;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .search-container input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(227, 84, 74, 0.2);
+    }
+    .search-container input::placeholder {
+      color: #6e7681;
+    }
+    .search-container svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: #6e7681;
+      pointer-events: none;
+    }
+
+    /* Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .status-badge.ok {
+      background: var(--green-bg);
+      color: var(--green-text);
+      border: 1px solid rgba(63, 185, 80, 0.25);
+    }
+    .status-badge.warn {
+      background: var(--yellow-bg);
+      color: var(--yellow-text);
+      border: 1px solid rgba(227, 179, 65, 0.25);
+    }
+    .cat-chip {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      font-size: 0.72rem;
+      color: #c9d1d9;
+    }
+
+    /* Mobile Cards View (< 768px) */
+    .mobile-cards-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .attendee-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+    .attendee-card:active {
+      background: rgba(255, 255, 255, 0.07);
+    }
+    .card-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin: 0;
+      word-break: break-word;
+    }
+    .card-meta-chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .card-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      font-size: 0.78rem;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .card-detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .card-detail-label {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .card-detail-val {
+      color: #e6edf3;
+      word-break: break-word;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.76rem;
+    }
+    .card-checkin-status {
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-top: 4px;
+    }
+    .card-checkin-status.checked {
+      color: var(--green-text);
+    }
+    .card-checkin-status.pending {
+      color: var(--text-muted);
+    }
+
+    /* Desktop Table View (>= 768px) */
+    .desktop-table-wrap {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .desktop-table-wrap table {
+      width: 100%;
+      min-width: 820px;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .desktop-table-wrap th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+      white-space: nowrap;
+    }
+    .desktop-table-wrap td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: #e6edf3;
+      vertical-align: middle;
+    }
+    .desktop-table-wrap tr:last-child td {
+      border-bottom: none;
+    }
+    .desktop-table-wrap tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .empty-state {
+      padding: 36px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (min-width: 768px) {
+      .mobile-cards-wrap { display: none; }
+      .desktop-table-wrap { display: block; }
+      .attendee-page { padding: 28px 24px 60px; }
+      .page-title { font-size: 1.6rem; }
+      .search-container { max-width: 420px; }
+      .controls-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .filter-bar { margin-bottom: 0; }
+      .search-container { margin-bottom: 0; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="header-left">
-      <span><span class="dot"></span>Organizer Attendees</span>
+    <div class="header-brand">
+      <span class="dot"></span>
+      <span>Organizer Portal</span>
     </div>
-    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-      <button type="button" class="btn btn-dark" onclick="window.location.href='/check-in/big-fat-indian-scam-sangeet'">Back to Check-In</button>
-    </div>
+    <a href="/check-in/big-fat-indian-scam-sangeet" class="header-back-btn">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Back to Check-In</span>
+    </a>
   </div>
 
   <div class="attendee-page">
-    <div class="attendee-toolbar">
-      <div>
-        <h1 class="card-title" style="margin:0; font-size:1.5rem;">Registered Attendees</h1>
-        <div class="muted" id="attendeeSummary">Loading attendees…</div>
+    <div class="page-head">
+      <h1 class="page-title">Registered Attendees</h1>
+      <div class="page-subtitle" id="attendeeSummary">Loading attendees…</div>
+    </div>
+
+    <div class="controls-row">
+      <!-- Filter Tabs -->
+      <div class="filter-bar">
+        <button type="button" class="filter-pill active" data-filter="all" id="filterAll">
+          All <span class="pill-count" id="countAll">0</span>
+        </button>
+        <button type="button" class="filter-pill" data-filter="checked" id="filterChecked">
+          Checked In <span class="pill-count" id="countChecked">0</span>
+        </button>
+        <button type="button" class="filter-pill" data-filter="pending" id="filterPending">
+          Pending <span class="pill-count" id="countPending">0</span>
+        </button>
       </div>
-      <div class="search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="searchInput" placeholder="Search name, email, or ticket ID" autocomplete="off">
+
+      <!-- Search Input -->
+      <div class="search-container">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search name, email, or ticket ID…" autocomplete="off">
       </div>
     </div>
 
-    <div class="attendee-table-wrap">
+    <!-- Mobile Cards View -->
+    <div class="mobile-cards-wrap" id="mobileCardsWrap">
+      <div class="empty-state">Loading attendees…</div>
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="desktop-table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Sr No</th>
+            <th>#</th>
             <th>Name</th>
             <th>Email</th>
             <th>Ticket ID</th>
             <th>Category</th>
             <th>Qty</th>
-            <th>Checked In</th>
+            <th>Checked In At</th>
             <th>Last Scan</th>
             <th>Status</th>
           </tr>
@@ -67,9 +427,27 @@
   </div>
 
   <script>
-    const attendeeTableBody = document.getElementById('attendeeTableBody');
+    let rawAttendees = [];
+    let currentFilter = 'all';
+
     const attendeeSummary = document.getElementById('attendeeSummary');
     const searchInput = document.getElementById('searchInput');
+    const mobileCardsWrap = document.getElementById('mobileCardsWrap');
+    const attendeeTableBody = document.getElementById('attendeeTableBody');
+    const countAll = document.getElementById('countAll');
+    const countChecked = document.getElementById('countChecked');
+    const countPending = document.getElementById('countPending');
+
+    // Filter pill buttons
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        render();
+      });
+    });
+
     const format = (value) => {
       if (!value) return '—';
       try {
@@ -101,11 +479,106 @@
       const suffix = rest.join('/');
       if (suffix) {
         const visible = suffix.slice(0, 4);
-        const hidden = '*'.repeat(Math.max(4, Math.min(10, suffix.length - 4)));
+        const hidden = '*'.repeat(Math.max(4, Math.min(8, suffix.length - 4)));
         return `${prefix}/${visible}${hidden}`;
       }
       if (raw.length <= 6) return raw.slice(0, 2) + '*'.repeat(Math.max(2, raw.length - 2));
       return raw.slice(0, 4) + '*'.repeat(Math.max(2, raw.length - 4));
+    }
+
+    function render() {
+      // Calculate counts
+      const totalCount = rawAttendees.length;
+      const checkedCount = rawAttendees.filter(a => Number(a.times_scanned || 0) > 0).length;
+      const pendingCount = totalCount - checkedCount;
+
+      countAll.textContent = totalCount;
+      countChecked.textContent = checkedCount;
+      countPending.textContent = pendingCount;
+
+      const query = (searchInput.value || '').trim().toLowerCase();
+
+      const filtered = rawAttendees.filter(row => {
+        const isChecked = Number(row.times_scanned || 0) > 0;
+        if (currentFilter === 'checked' && !isChecked) return false;
+        if (currentFilter === 'pending' && isChecked) return false;
+
+        if (!query) return true;
+        const haystack = [row.name, row.email, row.ticket_id, row.category].join(' ').toLowerCase();
+        return haystack.includes(query);
+      });
+
+      attendeeSummary.textContent = `${filtered.length} of ${totalCount} attendees shown (${checkedCount} checked in)`;
+
+      // Render Mobile Cards
+      if (!filtered.length) {
+        mobileCardsWrap.innerHTML = '<div class="empty-state">No attendees match your search or filter.</div>';
+        attendeeTableBody.innerHTML = '<tr><td colspan="9" class="empty-state">No attendees match your search or filter.</td></tr>';
+        return;
+      }
+
+      let mobileHtml = '';
+      let tableHtml = '';
+
+      filtered.forEach((row, index) => {
+        const isChecked = Number(row.times_scanned || 0) > 0;
+        const checkedInAt = row.first_scan ? format(row.first_scan) : '—';
+        const lastScan = row.last_scan ? format(row.last_scan) : '—';
+        const displayTicketId = maskTicketId(row.ticket_id || '—');
+        const statusBadge = isChecked
+          ? '<span class="status-badge ok"><i class="fa-solid fa-check"></i> Checked In</span>'
+          : '<span class="status-badge warn"><i class="fa-regular fa-clock"></i> Pending</span>';
+
+        // 1. Mobile Card HTML
+        mobileHtml += `
+          <div class="attendee-card">
+            <div class="card-top-row">
+              <div>
+                <h3 class="card-name">${escapeHtml(row.name || 'Anonymous Guest')}</h3>
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+                  ${escapeHtml(row.email || '—')}
+                </div>
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+
+            <div class="card-meta-chips">
+              <span class="cat-chip">${escapeHtml(row.category || 'Male Stag')}</span>
+              <span class="cat-chip">Qty: ${escapeHtml(row.quantity || 1)}</span>
+              ${Number(row.times_scanned || 0) > 1 ? `<span class="cat-chip" style="color:var(--yellow-text); border-color:rgba(227,179,65,0.3);">${row.times_scanned} scans</span>` : ''}
+            </div>
+
+            <div class="card-details-grid">
+              <div class="card-detail-item">
+                <span class="card-detail-label">Ticket ID</span>
+                <span class="card-detail-val">${escapeHtml(displayTicketId)}</span>
+              </div>
+              <div class="card-detail-item">
+                <span class="card-detail-label">Check-In Time</span>
+                <span class="card-detail-val">${escapeHtml(checkedInAt)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // 2. Desktop Table Row HTML
+        tableHtml += `
+          <tr>
+            <td>${index + 1}</td>
+            <td><strong>${escapeHtml(row.name || '—')}</strong></td>
+            <td>${escapeHtml(row.email || '—')}</td>
+            <td><code style="font-family:'Roboto Mono',monospace; font-size:0.8rem;">${escapeHtml(displayTicketId)}</code></td>
+            <td><span class="cat-chip">${escapeHtml(row.category || 'Male Stag')}</span></td>
+            <td>${escapeHtml(row.quantity || 1)}</td>
+            <td>${escapeHtml(checkedInAt)}</td>
+            <td>${escapeHtml(lastScan)}</td>
+            <td>${statusBadge}</td>
+          </tr>
+        `;
+      });
+
+      mobileCardsWrap.innerHTML = mobileHtml;
+      attendeeTableBody.innerHTML = tableHtml;
     }
 
     async function loadAttendees() {
@@ -113,50 +586,21 @@
         const res = await fetch('/api/attendees');
         if (!res.ok) throw new Error('Failed to load attendees');
         const data = await res.json();
-        const rows = Array.isArray(data.attendees) ? data.attendees : [];
-        const query = (searchInput.value || '').trim().toLowerCase();
-        const filtered = query ? rows.filter((row) => {
-          const haystack = [row.name, row.email, row.ticket_id, row.category].join(' ').toLowerCase();
-          return haystack.includes(query);
-        }) : rows;
-
-        attendeeSummary.textContent = `${filtered.length} attendee${filtered.length === 1 ? '' : 's'} shown`;
-        attendeeTableBody.innerHTML = '';
-
-        if (!filtered.length) {
-          attendeeTableBody.innerHTML = '<tr><td colspan="9" class="muted" style="padding: 20px;">No attendees found.</td></tr>';
-          return;
-        }
-
-        filtered.forEach((row, index) => {
-          const checkedInAt = row.first_scan ? format(row.first_scan) : '—';
-          const lastScan = row.last_scan ? format(row.last_scan) : '—';
-          const times = Number(row.times_scanned || 0);
-          const status = times > 0 ? '<span class="badge ok">Checked In</span>' : '<span class="badge warn">Pending</span>';
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${escapeHtml(row.name || '—')}</td>
-            <td>${escapeHtml(row.email || '—')}</td>
-            <td>${escapeHtml(maskTicketId(row.ticket_id || '—'))}</td>
-            <td>${escapeHtml(row.category || 'Male Stag')}</td>
-            <td>${escapeHtml(row.quantity || 1)}</td>
-            <td>${escapeHtml(checkedInAt)}</td>
-            <td>${escapeHtml(lastScan)}</td>
-            <td>${status}</td>
-          `;
-          attendeeTableBody.appendChild(tr);
-        });
+        rawAttendees = Array.isArray(data.attendees) ? data.attendees : [];
+        render();
       } catch (_) {
         attendeeSummary.textContent = 'Unable to load attendees right now.';
-        attendeeTableBody.innerHTML = '<tr><td colspan="9" class="muted" style="padding: 20px;">Unable to load attendee list.</td></tr>';
+        if (!rawAttendees.length) {
+          mobileCardsWrap.innerHTML = '<div class="empty-state">Unable to load attendee list.</div>';
+          attendeeTableBody.innerHTML = '<tr><td colspan="9" class="empty-state">Unable to load attendee list.</td></tr>';
+        }
       }
     }
 
-    searchInput.addEventListener('input', loadAttendees);
+    searchInput.addEventListener('input', render);
     loadAttendees();
     setInterval(loadAttendees, 5000);
   </script>
 </body>
 </html>
+

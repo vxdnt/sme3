@@ -66,7 +66,28 @@ def _ticket_url(attendee: dict) -> str:
 async def qr_status(request: Request):
     maybe_rotate_for_request(get_base_url(request))
     session_id = (request.query_params.get("session_id") or "").strip() or None
-    payload = rotate_token(state.current_base_url, session_id=session_id)
+
+    token = None
+    if session_id:
+        token = state.session_tokens.get(session_id)
+        if token and not is_token_valid(token):
+            token = None
+    if not token and is_token_valid(state.current_token):
+        token = state.current_token
+
+    if token:
+        expires_at = state.active_tokens.get(token, state.expires_at)
+        scan_url = f"{state.current_base_url}/scan/{token}"
+        payload = {
+            "type": "token",
+            "token": token,
+            "expiresAt": expires_at,
+            "qr": make_qr_data_uri(scan_url),
+            "url": scan_url,
+        }
+    else:
+        payload = rotate_token(state.current_base_url, session_id=session_id)
+
     snapshot = get_active_token_snapshot()
     payload["activeCount"] = snapshot["activeCount"]
     payload["activeTokens"] = snapshot["activeTokens"]

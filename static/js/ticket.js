@@ -34,13 +34,19 @@
       location: 'Eumsik Garden Restaurant'
     };
 
+    function formatTicketDisplay(rawId) {
+      if (!rawId || rawId === '1110/unknown') return '—';
+      const prefix = rawId.split('/')[0] || rawId;
+      return '#' + prefix;
+    }
+
     document.getElementById('eventName').textContent = ticket.eventName;
     document.getElementById('eventDesc').textContent = ticket.eventDescription;
     document.getElementById('eventDate').textContent = ticket.date;
     document.getElementById('eventTime').textContent = ticket.time;
     document.getElementById('eventLocation').innerHTML = '<a href="https://maps.app.goo.gl/PEXN9a42ppobr7sv7" target="_blank" style="color:inherit;text-decoration:underline;text-underline-offset:2px;display:inline-flex;align-items:center;gap:4px;"><span>' + ticket.location + '</span><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75em;opacity:0.85;"></i></a>';
     document.getElementById('attendeeName').textContent = ticket.attendeeName;
-    document.getElementById('attendeeEmail').textContent = 'Ticket ID: ' + ticket.ticketId;
+    document.getElementById('attendeeEmail').textContent = formatTicketDisplay(ticket.ticketId);
     document.getElementById('ticketQty').textContent = ticket.quantity;
     document.getElementById('ticketCategory').textContent = ticket.category;
 
