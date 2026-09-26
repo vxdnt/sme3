@@ -65,7 +65,8 @@ def _ticket_url(attendee: dict) -> str:
 @router.get("/qr")
 async def qr_status(request: Request):
     maybe_rotate_for_request(get_base_url(request))
-    payload = rotate_token(state.current_base_url)
+    session_id = (request.query_params.get("session_id") or "").strip() or None
+    payload = rotate_token(state.current_base_url, session_id=session_id)
     snapshot = get_active_token_snapshot()
     payload["activeCount"] = snapshot["activeCount"]
     payload["activeTokens"] = snapshot["activeTokens"]

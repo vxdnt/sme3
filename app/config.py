@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-FRONTEND_DIR = ROOT_DIR / "frontend"
+FRONTEND_DIR = ROOT_DIR / "templates"
 STATIC_DIR = ROOT_DIR / "static"
 SME_DIR = ROOT_DIR / "sme"
 
@@ -17,9 +17,15 @@ BREVO_API_KEY: str = os.getenv("BREVO_API_KEY", "").strip()
 FROM_EMAIL: str = os.getenv("FROM_EMAIL", "tickets@resend.dev").strip()
 MAIL_DEFAULT_SENDER: str = os.getenv("MAIL_DEFAULT_SENDER", FROM_EMAIL).strip()
 MAIL_REPLY_TO: str = os.getenv("MAIL_REPLY_TO", FROM_EMAIL).strip()
+EVENT_NAME: str = os.getenv("EVENT_NAME", "Big Fat Indian Scam Sangeet").strip()
+EVENT_DATE: str = os.getenv("EVENT_DATE", "27 Sep 2026").strip()
+EVENT_VENUE: str = os.getenv("EVENT_VENUE", "Eumsik Garden Restaurant").strip()
+EVENT_FLYER_URL: str = os.getenv("EVENT_FLYER_URL", "https://drive.google.com/uc?export=view&id=1T8boBuTbTxvc4UHz9HjqZTN8IwQ2HIle").strip()
 ROTATE_SECONDS = 15
 TICKET_TTL_SECONDS = int(os.getenv("TICKET_TTL_SECONDS", "86400"))
-TICKET_SECRET = os.getenv("TICKET_SECRET", "change-this-ticket-secret-in-production").strip()
+TICKET_SECRET = os.getenv("TICKET_SECRET", "").strip()
+if not TICKET_SECRET:
+    raise RuntimeError("TICKET_SECRET is required. Set it in the environment before starting the app.")
 SQLITE_PATH = ROOT_DIR / "database.db"
 
 IS_POSTGRES = bool(

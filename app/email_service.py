@@ -1,10 +1,24 @@
 from urllib.parse import urlencode
 
 from app import state
-from app.config import APP_BASE_URL, BREVO_API_KEY, FROM_EMAIL, MAIL_DEFAULT_SENDER, MAIL_REPLY_TO, RESEND_API_KEY
+from app.config import (
+    APP_BASE_URL,
+    BREVO_API_KEY,
+    EVENT_DATE,
+    EVENT_FLYER_URL,
+    EVENT_NAME,
+    EVENT_VENUE,
+    FROM_EMAIL,
+    MAIL_DEFAULT_SENDER,
+    MAIL_REPLY_TO,
+    RESEND_API_KEY,
+)
 
 
 def send_ticket_email(to_email: str, name: str, ticket_url: str, quantity: int, category: str) -> dict:
+    if not BREVO_API_KEY and not RESEND_API_KEY:
+        return {"ok": True, "demo_mode": True, "message": "Email delivery is not configured; demo mode is active. Use the generated ticket link below."}
+
     if BREVO_API_KEY:
         try:
             import sib_api_v3_sdk
@@ -15,7 +29,7 @@ def send_ticket_email(to_email: str, name: str, ticket_url: str, quantity: int, 
             api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
             base_url = (APP_BASE_URL or state.current_base_url or "http://localhost:8000").rstrip("/")
-            flyer_url = "https://drive.google.com/uc?export=view&id=1T8boBuTbTxvc4UHz9HjqZTN8IwQ2HIle"
+            flyer_url = EVENT_FLYER_URL
             html_body = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -43,12 +57,13 @@ def send_ticket_email(to_email: str, name: str, ticket_url: str, quantity: int, 
         <tr>
           <td>
             <img src="{flyer_url}" alt="Event Flyer" class="hero-img" width="520" style="display:block; width:100%; max-width:100%; height:300px; object-fit:cover;">
+          </td>
         </tr>
 
         <tr>
           <td class="pad-lg" style="background:#0a0a0a; padding:22px 28px 20px; color:#ffffff;">
-            <h1 class="event-title" style="margin:12px 0 4px; font-size:1.45rem; font-weight:600; line-height:1.3;">Big Fat Indian Scam Sangeet</h1>
-            <p style="margin:0; color:#9aa0a6; font-size:0.85rem;">27 Sep 2026 &middot; 6:00 PM &middot; Eumsik Garden Restaurant</p>
+            <h1 class="event-title" style="margin:12px 0 4px; font-size:1.45rem; font-weight:600; line-height:1.3;">{EVENT_NAME}</h1>
+            <p style="margin:0; color:#9aa0a6; font-size:0.85rem;">{EVENT_DATE} &middot; 6:00 PM &middot; {EVENT_VENUE}</p>
           </td>
         </tr>
 
@@ -56,7 +71,7 @@ def send_ticket_email(to_email: str, name: str, ticket_url: str, quantity: int, 
           <td class="pad-lg" style="padding:28px 28px 8px;">
             <p style="margin:0 0 6px; font-size:1.08rem; font-weight:600; color:#0a0a0a;">Hey {name}, you're all set! 🎉</p>
             <p style="margin:0 0 22px; font-size:0.9rem; color:#5f6368; line-height:1.6;">
-              Your ticket for <strong>Big Fat Indian Scam Sangeet</strong> is confirmed. Here's everything you need for the door.
+              Your ticket for <strong>{EVENT_NAME}</strong> is confirmed. Here's everything you need for the door.
             </p>
 
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:0.88rem; margin-bottom:8px; background:#faf9f7; border-radius:10px;">
@@ -200,12 +215,12 @@ def send_ticket_email(to_email: str, name: str, ticket_url: str, quantity: int, 
   </div>
   <div class="body">
     <p class="greeting">Hey {name}! 🎉</p>
-    <p class="subtext">Your ticket for <strong>Big Fat Indian Scam Sangeet</strong> is confirmed. Present this ticket at the entrance and your organizer will scan you in.</p>
+    <p class="subtext">Your ticket for <strong>{EVENT_NAME}</strong> is confirmed. Present this ticket at the entrance and your organizer will scan you in.</p>
     <div class="detail-row"><span class="detail-label">Attendee</span><span class="detail-value">{name}</span></div>
     <div class="detail-row"><span class="detail-label">Category</span><span class="detail-value">{category}</span></div>
     <div class="detail-row"><span class="detail-label">Quantity</span><span class="detail-value">{quantity}</span></div>
-    <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">27 Sep 2026 &middot; 6:00 PM</span></div>
-    <div class="detail-row"><span class="detail-label">Venue</span><span class="detail-value">Eumsik Garden Restaurant</span></div>
+    <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">{EVENT_DATE} &middot; 6:00 PM</span></div>
+    <div class="detail-row"><span class="detail-label">Venue</span><span class="detail-value">{EVENT_VENUE}</span></div>
     <a href="{ticket_url}" class="btn">Open My Ticket →</a>
   </div>
   <div class="footer">

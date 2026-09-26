@@ -32,20 +32,26 @@ let logData     = [];
   const toastTitle       = document.getElementById('toastTitle');
   const toastDetail      = document.getElementById('toastDetail');
 
-  scanBtn.addEventListener('click', async function () {
-    qrModalBackdrop.classList.add('open');
-    await refreshQrToken();
-  });
+  if (scanBtn) {
+    scanBtn.addEventListener('click', async function () {
+      qrModalBackdrop.classList.add('open');
+      await refreshQrToken();
+    });
+  }
 
-  closeQrModalBtn.addEventListener('click', function () {
-    qrModalBackdrop.classList.remove('open');
-  });
-
-  qrModalBackdrop.addEventListener('click', function (e) {
-    if (e.target === qrModalBackdrop) {
+  if (closeQrModalBtn) {
+    closeQrModalBtn.addEventListener('click', function () {
       qrModalBackdrop.classList.remove('open');
-    }
-  });
+    });
+  }
+
+  if (qrModalBackdrop) {
+    qrModalBackdrop.addEventListener('click', function (e) {
+      if (e.target === qrModalBackdrop) {
+        qrModalBackdrop.classList.remove('open');
+      }
+    });
+  }
 
   setInterval(function () {
     if (!isPaused) {
@@ -209,16 +215,20 @@ let logData     = [];
     }, 4000);
   }
 
-  verifiedCloseBtn.addEventListener('click', function () {
-    if (verifiedPopupTimer) clearTimeout(verifiedPopupTimer);
-    verifiedPopupBackdrop.classList.remove('show');
-  });
-  verifiedPopupBackdrop.addEventListener('click', function (e) {
-    if (e.target === verifiedPopupBackdrop) {
+  if (verifiedCloseBtn) {
+    verifiedCloseBtn.addEventListener('click', function () {
       if (verifiedPopupTimer) clearTimeout(verifiedPopupTimer);
       verifiedPopupBackdrop.classList.remove('show');
-    }
-  });
+    });
+  }
+  if (verifiedPopupBackdrop) {
+    verifiedPopupBackdrop.addEventListener('click', function (e) {
+      if (e.target === verifiedPopupBackdrop) {
+        if (verifiedPopupTimer) clearTimeout(verifiedPopupTimer);
+        verifiedPopupBackdrop.classList.remove('show');
+      }
+    });
+  }
 
   function showScanToast(data) {
     const isRescan = data.type === 'already_approved';
@@ -369,22 +379,25 @@ let logData     = [];
     renderTable(filtered);
   }
 
-  searchInput.addEventListener('input', filterAndRender);
+  if (searchInput) {
+    searchInput.addEventListener('input', filterAndRender);
+  }
   loadAttendees();
 
   function isValidEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const name = nameInput.value.trim();
-    const email = emailInput.value.trim();
-    const category = categorySelect.value;
-    const quantity = parseInt(quantitySelect.value) || 1;
-    msg.className = 'msg';
-    msg.textContent = '';
-    ticketPreviewBox.classList.remove('show');
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const category = categorySelect.value;
+      const quantity = parseInt(quantitySelect.value) || 1;
+      msg.className = 'msg';
+      msg.textContent = '';
+      if (ticketPreviewBox) ticketPreviewBox.classList.remove('show');
 
     if (!name) {
       msg.classList.add('error');
@@ -398,49 +411,55 @@ let logData     = [];
       return;
     }
 
-    sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending…';
+if (sendBtn) sendBtn.disabled = true;
+      if (sendBtn) sendBtn.textContent = 'Sending…';
 
-    try {
-      const res = await fetch('/api/attendees', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, name: name, quantity: quantity, category: category })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send ticket');
+      try {
+        const res = await fetch('/api/attendees', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, name: name, quantity: quantity, category: category })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send ticket');
 
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Send ticket';
-      msg.classList.add('success');
-      if (data.emailSent) {
-        msg.textContent = 'Ticket generated & emailed to ' + email + ' (' + category + ', Qty: ' + quantity + ')! 🎉';
-      } else if (data.emailError) {
-        msg.textContent = 'Ticket generated (' + category + ', Qty: ' + quantity + '), but email failed: ' + data.emailError;
-      } else {
-        msg.textContent = 'Ticket generated for ' + name + ' (' + email + ') — ' + category + ' (Qty: ' + quantity + ')!';
+        if (sendBtn) sendBtn.disabled = false;
+        if (sendBtn) sendBtn.textContent = 'Send ticket';
+        msg.classList.add('success');
+        if (data.emailSent) {
+          msg.textContent = 'Ticket generated & emailed to ' + email + ' (' + category + ', Qty: ' + quantity + ')! 🎉';
+        } else if (data.emailError) {
+          msg.textContent = 'Ticket generated (' + category + ', Qty: ' + quantity + '), but email failed: ' + data.emailError;
+        } else {
+          msg.textContent = 'Ticket generated for ' + name + ' (' + email + ') — ' + category + ' (Qty: ' + quantity + ')!';
+        }
+
+        const rawTicketId = (data.attendee && data.attendee.ticket_id) ? data.attendee.ticket_id : '';
+        const ticketUrl = window.location.origin + '/ticket?ticket_id=' + encodeURIComponent(rawTicketId);
+        if (ticketLinkInput) ticketLinkInput.value = ticketUrl;
+        if (openLinkBtn) openLinkBtn.href = ticketUrl;
+        if (ticketPreviewBox) ticketPreviewBox.classList.add('show');
+
+        form.reset();
+        if (categorySelect) categorySelect.value = 'Male Stag';
+        if (quantitySelect) quantitySelect.value = '1';
+        loadAttendees();
+      } catch (err) {
+        if (sendBtn) sendBtn.disabled = false;
+        if (sendBtn) sendBtn.textContent = 'Send ticket';
+        msg.classList.add('error');
+        msg.textContent = err.message;
       }
+    });
+  }
 
-      const ticketUrl = window.location.origin + '/ticket?ticket_id=' + encodeURIComponent(data.attendee.ticket_id || data.ticketUrl.split('ticket_id=')[1] || '');
-      ticketLinkInput.value = ticketUrl;
-      openLinkBtn.href = ticketUrl;
-      ticketPreviewBox.classList.add('show');
-
-      form.reset();
-      categorySelect.value = 'Male Stag';
-      quantitySelect.value = '1';
-      loadAttendees();
-    } catch (err) {
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Send ticket';
-      msg.classList.add('error');
-      msg.textContent = err.message;
-    }
-  });
-
-  copyLinkBtn.addEventListener('click', function () {
-    ticketLinkInput.select();
-    navigator.clipboard.writeText(ticketLinkInput.value);
-    copyLinkBtn.textContent = 'Copied!';
-    setTimeout(function () { copyLinkBtn.textContent = 'Copy'; }, 2000);
-  });
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener('click', function () {
+      if (ticketLinkInput) ticketLinkInput.select();
+      if (ticketLinkInput && navigator.clipboard) {
+        navigator.clipboard.writeText(ticketLinkInput.value);
+      }
+      copyLinkBtn.textContent = 'Copied!';
+      setTimeout(function () { copyLinkBtn.textContent = 'Copy'; }, 2000);
+    });
+  }

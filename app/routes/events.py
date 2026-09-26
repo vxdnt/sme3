@@ -8,7 +8,7 @@ from starlette.types import Receive, Scope, Send
 
 from app import state
 from app.exceptions import load_frontend
-from app.qr import make_qr_data_uri, maybe_rotate_for_request
+from app.qr import make_qr_data_uri, maybe_rotate_for_request, rotate_token
 from app.utils import get_base_url, to_json
 
 router = APIRouter()
@@ -35,13 +35,15 @@ class SafeStreamingResponse(StreamingResponse):
 @router.get("/events")
 async def events(request: Request):
     maybe_rotate_for_request(get_base_url(request))
+    session_id = (request.query_params.get("session_id") or "").strip() or "default"
 
     queue: asyncio.Queue = asyncio.Queue()
     state.subscribers.append(queue)
+    state.session_subscribers.setdefault(session_id, []).append(queue)
 
     async def stream():
         try:
-            token = state.current_token or next(reversed(state.active_tokens), None)
+            token = state.session_tokens.get(session_id) or state.current_token or next(reversed(state.active_tokens), None)
             if token:
                 token_url = f"{state.current_base_url}/scan/{token}"
                 payload = {
@@ -51,7 +53,7 @@ async def events(request: Request):
                     "qr": make_qr_data_uri(token_url),
                 }
             else:
-                payload = rotate_token(state.current_base_url)
+                payload = rotate_token(state.current_base_url, session_id=session_id)
             yield f"data: {to_json(payload)}\n\n"
             while True:
                 event = await queue.get()
@@ -61,6 +63,10 @@ async def events(request: Request):
         finally:
             if queue in state.subscribers:
                 state.subscribers.remove(queue)
+            if queue in state.session_subscribers.get(session_id, []):
+                state.session_subscribers[session_id].remove(queue)
+            if not state.session_subscribers.get(session_id):
+                state.session_subscribers.pop(session_id, None)
 
     return SafeStreamingResponse(
         stream(),
@@ -75,7 +81,7 @@ async def events(request: Request):
 
 @router.get("/scan/{token}", response_class=HTMLResponse)
 async def scan_redirect(token: str):
-    valid = token == state.current_token and time.time() < state.expires_at
+    valid = bool(token in state.active_tokens and time.time() < state.active_tokens[token])
     if not valid:
         return HTMLResponse(load_frontend("expired.html"), status_code=410, headers=NOINDEX)
     return HTMLResponse(

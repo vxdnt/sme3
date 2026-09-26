@@ -10,5 +10,5 @@ class GracefulShutdownMiddleware:
     async def __call__(self, scope: Scope, receive: Receive, send: Send):
         try:
             await self.app(scope, receive, send)
-        except (asyncio.CancelledError, KeyboardInterrupt):
+        except asyncio.CancelledError:
             pass

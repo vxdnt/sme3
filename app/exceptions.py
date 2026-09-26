@@ -10,7 +10,7 @@ from app.config import FRONTEND_DIR
 def load_frontend(filename: str) -> str:
     path = FRONTEND_DIR / filename
     if not path.exists():
-        fallback = Path("templates") / filename
+        fallback = Path(__file__).resolve().parent.parent / "templates" / filename
         if fallback.exists():
             return fallback.read_text(encoding="utf-8")
         raise FileNotFoundError(filename)

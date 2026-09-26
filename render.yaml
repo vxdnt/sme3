@@ -9,7 +9,13 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: TICKET_SECRET
+        sync: false
       - key: RESEND_API_KEY
         sync: false
+      - key: BREVO_API_KEY
+        sync: false
       - key: FROM_EMAIL
+        sync: false
+      - key: APP_BASE_URL
         sync: false

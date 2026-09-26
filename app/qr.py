@@ -22,6 +22,10 @@ def prune_expired_tokens() -> None:
     expired = [token for token, expires_at in list(state.active_tokens.items()) if expires_at <= now]
     for token in expired:
         del state.active_tokens[token]
+    expired_sessions = [session_id for session_id, expires_at in list(state.session_expires.items()) if expires_at <= now]
+    for session_id in expired_sessions:
+        state.session_expires.pop(session_id, None)
+        state.session_tokens.pop(session_id, None)
     if state.current_token in expired:
         state.current_token = None
     if state.current_token is None and state.active_tokens:
@@ -49,7 +53,7 @@ def is_token_valid(token: str | None) -> bool:
     return bool(expiry is not None and time.time() < expiry)
 
 
-def rotate_token(base_url: str | None = None) -> dict:
+def rotate_token(base_url: str | None = None, session_id: str | None = None) -> dict:
     if base_url:
         state.current_base_url = base_url
     token = secrets.token_hex(16)
@@ -57,6 +61,9 @@ def rotate_token(base_url: str | None = None) -> dict:
     state.active_tokens[token] = expires_at
     state.current_token = token
     state.expires_at = expires_at
+    if session_id:
+        state.session_tokens[session_id] = token
+        state.session_expires[session_id] = expires_at
     scan_url = f"{state.current_base_url}/scan/{token}"
     payload = {
         "type": "token",
