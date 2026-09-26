@@ -108,7 +108,7 @@
           }
           if (data.attendee.ticket_id) {
             ticket.ticketId = data.attendee.ticket_id;
-            document.getElementById('attendeeEmail').textContent = 'Ticket ID: ' + ticket.ticketId;
+            document.getElementById('attendeeEmail').textContent = formatTicketDisplay(ticket.ticketId);
           }
           if (data.attendee.quantity) {
             document.getElementById('ticketQty').textContent = data.attendee.quantity;
