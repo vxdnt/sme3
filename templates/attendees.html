@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Organizer Attendees</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/check-in.css">
+  <style>
+    body { background: #101418; }
+    .attendee-page { max-width: 1280px; margin: 32px auto; padding: 0 18px 40px; }
+    .attendee-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+    .attendee-table-wrap { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:18px; overflow:hidden; }
+    .attendee-table-wrap table { width:100%; border-collapse:collapse; }
+    .attendee-table-wrap th, .attendee-table-wrap td { text-align:left; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .attendee-table-wrap th { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:#a7adb4; }
+    .attendee-table-wrap td { color:#e8eaed; }
+    .muted { color:#9aa0a6; }
+    .badge { display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:0.72rem; font-weight:700; }
+    .badge.ok { background: rgba(17, 179, 92, 0.12); color:#79f0ad; }
+    .badge.warn { background: rgba(255, 180, 0, 0.12); color:#ffcf5c; }
+    .link-button { text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <span><span class="dot"></span>Organizer Attendees</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <button type="button" class="btn btn-dark" onclick="window.location.href='/check-in/big-fat-indian-scam-sangeet'">Back to Check-In</button>
+    </div>
+  </div>
+
+  <div class="attendee-page">
+    <div class="attendee-toolbar">
+      <div>
+        <h1 class="card-title" style="margin:0; font-size:1.5rem;">Registered Attendees</h1>
+        <div class="muted" id="attendeeSummary">Loading attendees…</div>
+      </div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Search name, email, or ticket ID" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="attendee-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sr No</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Ticket ID</th>
+            <th>Category</th>
+            <th>Qty</th>
+            <th>Checked In</th>
+            <th>Last Scan</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="attendeeTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const attendeeTableBody = document.getElementById('attendeeTableBody');
+    const attendeeSummary = document.getElementById('attendeeSummary');
+    const searchInput = document.getElementById('searchInput');
+    const format = (value) => {
+      if (!value) return '—';
+      try {
+        const raw = String(value).trim();
+        const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+        const hasOffset = /[+-]\d{2}:?\d{2}$|Z$/i.test(iso);
+        const date = new Date(hasOffset ? iso : iso + '+05:30');
+        if (Number.isNaN(date.getTime())) return raw;
+        const parts = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).formatToParts(date);
+        const get = (type) => parts.find(p => p.type === type)?.value || '00';
+        return `${get('day')}-${get('month')}-${get('year')} ${get('hour')}:${get('minute')}:${get('second')}`;
+      } catch (_) {
+        return String(value);
+      }
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function maskTicketId(value) {
+      const raw = String(value || '').trim();
+      if (!raw || raw === '—') return '—';
+      const [prefix, ...rest] = raw.split('/');
+      const suffix = rest.join('/');
+      if (suffix) {
+        const visible = suffix.slice(0, 4);
+        const hidden = '*'.repeat(Math.max(4, Math.min(10, suffix.length - 4)));
+        return `${prefix}/${visible}${hidden}`;
+      }
+      if (raw.length <= 6) return raw.slice(0, 2) + '*'.repeat(Math.max(2, raw.length - 2));
+      return raw.slice(0, 4) + '*'.repeat(Math.max(2, raw.length - 4));
+    }
+
+    async function loadAttendees() {
+      try {
+        const res = await fetch('/api/attendees');
+        if (!res.ok) throw new Error('Failed to load attendees');
+        const data = await res.json();
+        const rows = Array.isArray(data.attendees) ? data.attendees : [];
+        const query = (searchInput.value || '').trim().toLowerCase();
+        const filtered = query ? rows.filter((row) => {
+          const haystack = [row.name, row.email, row.ticket_id, row.category].join(' ').toLowerCase();
+          return haystack.includes(query);
+        }) : rows;
+
+        attendeeSummary.textContent = `${filtered.length} attendee${filtered.length === 1 ? '' : 's'} shown`;
+        attendeeTableBody.innerHTML = '';
+
+        if (!filtered.length) {
+          attendeeTableBody.innerHTML = '<tr><td colspan="9" class="muted" style="padding: 20px;">No attendees found.</td></tr>';
+          return;
+        }
+
+        filtered.forEach((row, index) => {
+          const checkedInAt = row.first_scan ? format(row.first_scan) : '—';
+          const lastScan = row.last_scan ? format(row.last_scan) : '—';
+          const times = Number(row.times_scanned || 0);
+          const status = times > 0 ? '<span class="badge ok">Checked In</span>' : '<span class="badge warn">Pending</span>';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${escapeHtml(row.name || '—')}</td>
+            <td>${escapeHtml(row.email || '—')}</td>
+            <td>${escapeHtml(maskTicketId(row.ticket_id || '—'))}</td>
+            <td>${escapeHtml(row.category || 'Male Stag')}</td>
+            <td>${escapeHtml(row.quantity || 1)}</td>
+            <td>${escapeHtml(checkedInAt)}</td>
+            <td>${escapeHtml(lastScan)}</td>
+            <td>${status}</td>
+          `;
+          attendeeTableBody.appendChild(tr);
+        });
+      } catch (_) {
+        attendeeSummary.textContent = 'Unable to load attendees right now.';
+        attendeeTableBody.innerHTML = '<tr><td colspan="9" class="muted" style="padding: 20px;">Unable to load attendee list.</td></tr>';
+      }
+    }
+
+    searchInput.addEventListener('input', loadAttendees);
+    loadAttendees();
+    setInterval(loadAttendees, 5000);
+  </script>
+</body>
+</html>

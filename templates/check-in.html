@@ -14,9 +14,17 @@
     <div class="header-left">
       <span><span class="dot"></span>Event Check-In</span>
     </div>
-    <div class="live-badge">
-      <div class="live-dot"></div>
-      Live Terminal
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <button type="button" class="btn btn-dark" onclick="window.location.href='/organizer/attendees'" style="padding:10px 16px; font-size:0.74rem;">View Attendees</button>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live Terminal
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); font-size:0.72rem; color:#e8eaed;">
+        <span>Active QR</span>
+        <strong id="qrSessionCount" style="font-size:0.78rem;">1</strong>
+      </div>
+      <div id="qrTokenPreview" style="padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); font-size:0.72rem; color:#dfe1e5;">Current: —</div>
     </div>
   </div>
 
@@ -90,7 +98,7 @@
           <span class="table-count" id="tableCount">0 attendees</span>
           <div class="search-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="searchInput" placeholder="Search name or email…" autocomplete="off">
+            <input type="text" id="searchInput" placeholder="Search name or ticket ID…" autocomplete="off">
           </div>
         </div>
       </div>
@@ -100,7 +108,7 @@
             <tr>
               <th>Sr No</th>
               <th>Name</th>
-              <th>Email ID</th>
+              <th>Ticket ID</th>
               <th>Category</th>
               <th>Qty</th>
               <th>Checked In At</th>

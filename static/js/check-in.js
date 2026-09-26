@@ -57,9 +57,23 @@ let logData     = [];
   function applyQrToken(data) {
     if (!data || data.type !== 'token') return;
     latestToken = data;
+    const count = Number(data.activeCount || 1);
+    const tokenPreview = document.getElementById('qrTokenPreview');
+    const sessionCount = document.getElementById('qrSessionCount');
+    if (sessionCount) {
+      sessionCount.textContent = String(count || 1);
+    }
+    if (tokenPreview) {
+      const tokenText = data.token ? String(data.token).slice(0, 12) : '—';
+      tokenPreview.textContent = 'Current: ' + tokenText;
+    }
     if (!isPaused) {
       modalQrImg.src = data.qr || '';
       expiresAt = Number(data.expiresAt || Date.now() + 15000) * 1000;
+    }
+    const statusText = 'Rotates every 15 seconds • Active QR sessions: ' + String(count || 1);
+    if (modalQrStatus) {
+      modalQrStatus.textContent = statusText;
     }
   }
 
@@ -91,10 +105,11 @@ let logData     = [];
       } else if (data.type === 'approved' || data.type === 'already_approved') {
         showScanToast(data);
         showVerifiedPopup(data);
-        if (scanCounts && data.email) {
-          scanCounts[data.email] = data.timesScanned != null
-            ? parseInt(data.timesScanned) || (scanCounts[data.email] || 0) + 1
-            : (scanCounts[data.email] || 0) + 1;
+        const key = data.ticketId || data.email || 'unknown';
+        if (scanCounts && key) {
+          scanCounts[key] = data.timesScanned != null
+            ? parseInt(data.timesScanned) || (scanCounts[key] || 0) + 1
+            : (scanCounts[key] || 0) + 1;
         }
         loadAttendees();
       }
@@ -163,12 +178,26 @@ let logData     = [];
   const verifiedCloseBtn      = document.getElementById('verifiedCloseBtn');
   let verifiedPopupTimer = null;
 
+  function maskTicketId(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '—';
+    const prefix = raw.split('/')[0] || raw;
+    const suffix = raw.includes('/') ? raw.split('/').slice(1).join('/') : '';
+    if (suffix) {
+      const visible = suffix.slice(0, 4);
+      const hidden = '*'.repeat(Math.max(4, Math.min(10, suffix.length - 4)));
+      return `${prefix}/${visible}${hidden}`;
+    }
+    if (raw.length <= 6) return raw.slice(0, 2) + '*'.repeat(Math.max(2, raw.length - 2));
+    return raw.slice(0, 4) + '*'.repeat(Math.max(2, raw.length - 4));
+  }
+
   function showVerifiedPopup(data) {
     const isRescan = data.type === 'already_approved';
     verifiedPopup.classList.toggle('rescan', isRescan);
     verifiedTitle.textContent = isRescan ? 'Already Verified (Re-scan)' : 'Verified';
     verifiedName.textContent = data.name || 'Guest';
-    verifiedEmail.textContent = data.email || '';
+    verifiedEmail.textContent = maskTicketId(data.ticketId || data.email || '—');
     const timeValue = data.approvedAt || data.newScan || data.approvedAtRaw || '';
     verifiedTime.textContent = formatIstTimestamp(timeValue);
     verifiedPopupBackdrop.classList.add('show');
@@ -195,7 +224,8 @@ let logData     = [];
     const isRescan = data.type === 'already_approved';
     toastTitle.textContent = isRescan ? 'Re-Scan Detected' : 'Scan Verified!';
     const timeValue = data.approvedAt || data.newScan || data.approvedAtRaw || '';
-    toastDetail.textContent = (data.name || data.email || 'Guest') + ' · ' + formatIstTimestamp(timeValue);
+    const secureId = maskTicketId(data.ticketId || data.email || 'Guest');
+    toastDetail.textContent = (data.name || 'Guest') + ' · ' + secureId + ' · ' + formatIstTimestamp(timeValue);
     scanAlertToast.classList.add('show');
 
     if (toastTimer) clearTimeout(toastTimer);
@@ -230,17 +260,17 @@ let logData     = [];
       const scans = parseInt(row.times_scanned) || 0;
       const badgeClass = scans > 0 ? 'active' : 'zero';
       const attendeeName = row.name || '—';
-      const attendeeEmail = row.email || '—';
+      const attendeeTicketId = maskTicketId(row.ticket_id || '—');
       const attendeeCat = row.category || 'Male Stag';
       const attendeeQty = row.quantity || 1;
       const checkedInAt = row.first_scan ? formatIstTimestamp(row.first_scan) : '—';
       const lastScannedAt = row.last_scan ? formatIstTimestamp(row.last_scan) : '—';
-      const tUrl = '/ticket?email=' + encodeURIComponent(row.email) + '&name=' + encodeURIComponent(row.name || '') + '&qty=' + attendeeQty + '&cat=' + encodeURIComponent(attendeeCat);
+      const tUrl = '/ticket?ticket_id=' + encodeURIComponent(attendeeTicketId);
 
       tr.innerHTML =
         '<td>' + (i + 1) + '</td>' +
         '<td><strong>' + esc(attendeeName) + '</strong></td>' +
-        '<td>' + esc(attendeeEmail) + '</td>' +
+        '<td>' + esc(attendeeTicketId) + '</td>' +
         '<td><span class="badge-cat-table">' + esc(attendeeCat) + '</span></td>' +
         '<td>' + esc(attendeeQty) + '</td>' +
         '<td>' + esc(checkedInAt) + '</td>' +
@@ -292,33 +322,35 @@ let logData     = [];
 
   // ── Polling fallback: guarantees the popup fires even if the SSE push
   // connection is down, dropped, or missed the event for any reason. ──
-  let scanCounts = null; // email -> times_scanned, seeded on first load
+  let scanCounts = null; // ticketId -> times_scanned, seeded on first load
 
   function checkForNewScans(attendees) {
     if (scanCounts === null) {
       // First load: just seed the baseline, don't fire popups for history.
       scanCounts = {};
       attendees.forEach(function (a) {
-        scanCounts[a.email] = parseInt(a.times_scanned) || 0;
+        const key = a.ticket_id || a.email || 'unknown';
+        scanCounts[key] = parseInt(a.times_scanned) || 0;
       });
       return;
     }
     attendees.forEach(function (a) {
-      const email = a.email;
+      const key = a.ticket_id || a.email || 'unknown';
       const count = parseInt(a.times_scanned) || 0;
-      const prevCount = scanCounts.hasOwnProperty(email) ? scanCounts[email] : 0;
+      const prevCount = scanCounts.hasOwnProperty(key) ? scanCounts[key] : 0;
       if (count > prevCount) {
-        console.log('[check-in] Polling detected new scan for', email);
+        console.log('[check-in] Polling detected new scan for', key);
         const payload = {
           type: prevCount > 0 ? 'already_approved' : 'approved',
           name: a.name,
-          email: email,
+          email: a.email,
+          ticketId: a.ticket_id,
           approvedAt: a.last_scan
         };
         showScanToast(payload);
         showVerifiedPopup(payload);
       }
-      scanCounts[email] = count;
+      scanCounts[key] = count;
     });
   }
 
@@ -329,6 +361,7 @@ let logData     = [];
     const filtered = query
       ? logData.filter(function (row) {
           return (row.email || '').toLowerCase().includes(query) ||
+                 (row.ticket_id || '').toLowerCase().includes(query) ||
                  (row.name || '').toLowerCase().includes(query) ||
                  (row.category || '').toLowerCase().includes(query);
         })
@@ -388,7 +421,7 @@ let logData     = [];
         msg.textContent = 'Ticket generated for ' + name + ' (' + email + ') — ' + category + ' (Qty: ' + quantity + ')!';
       }
 
-      const ticketUrl = window.location.origin + '/ticket?email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(name) + '&qty=' + encodeURIComponent(quantity) + '&cat=' + encodeURIComponent(category);
+      const ticketUrl = window.location.origin + '/ticket?ticket_id=' + encodeURIComponent(data.attendee.ticket_id || data.ticketUrl.split('ticket_id=')[1] || '');
       ticketLinkInput.value = ticketUrl;
       openLinkBtn.href = ticketUrl;
       ticketPreviewBox.classList.add('show');

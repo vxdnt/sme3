@@ -17,16 +17,51 @@ def make_qr_data_uri(payload: str) -> str:
     return f"data:image/png;base64,{b64}"
 
 
+def prune_expired_tokens() -> None:
+    now = time.time()
+    expired = [token for token, expires_at in list(state.active_tokens.items()) if expires_at <= now]
+    for token in expired:
+        del state.active_tokens[token]
+    if state.current_token in expired:
+        state.current_token = None
+    if state.current_token is None and state.active_tokens:
+        state.current_token = next(reversed(state.active_tokens))
+
+
+def get_active_token_snapshot() -> dict:
+    prune_expired_tokens()
+    tokens = list(state.active_tokens.keys())
+    current = state.current_token or (tokens[-1] if tokens else None)
+    if current and current not in state.active_tokens:
+        current = None
+    return {
+        "activeCount": len(tokens),
+        "activeTokens": tokens,
+        "currentToken": current,
+    }
+
+
+def is_token_valid(token: str | None) -> bool:
+    if not token:
+        return False
+    prune_expired_tokens()
+    expiry = state.active_tokens.get(token)
+    return bool(expiry is not None and time.time() < expiry)
+
+
 def rotate_token(base_url: str | None = None) -> dict:
     if base_url:
         state.current_base_url = base_url
-    state.current_token = secrets.token_hex(16)
-    state.expires_at = time.time() + ROTATE_SECONDS
-    scan_url = f"{state.current_base_url}/scan/{state.current_token}"
+    token = secrets.token_hex(16)
+    expires_at = time.time() + ROTATE_SECONDS
+    state.active_tokens[token] = expires_at
+    state.current_token = token
+    state.expires_at = expires_at
+    scan_url = f"{state.current_base_url}/scan/{token}"
     payload = {
         "type": "token",
-        "token": state.current_token,
-        "expiresAt": state.expires_at,
+        "token": token,
+        "expiresAt": expires_at,
         "qr": make_qr_data_uri(scan_url),
         "url": scan_url,
     }

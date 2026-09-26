@@ -18,6 +18,8 @@ FROM_EMAIL: str = os.getenv("FROM_EMAIL", "tickets@resend.dev").strip()
 MAIL_DEFAULT_SENDER: str = os.getenv("MAIL_DEFAULT_SENDER", FROM_EMAIL).strip()
 MAIL_REPLY_TO: str = os.getenv("MAIL_REPLY_TO", FROM_EMAIL).strip()
 ROTATE_SECONDS = 15
+TICKET_TTL_SECONDS = int(os.getenv("TICKET_TTL_SECONDS", "86400"))
+TICKET_SECRET = os.getenv("TICKET_SECRET", "change-this-ticket-secret-in-production").strip()
 SQLITE_PATH = ROOT_DIR / "database.db"
 
 IS_POSTGRES = bool(

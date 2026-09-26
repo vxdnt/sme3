@@ -41,13 +41,17 @@ async def events(request: Request):
 
     async def stream():
         try:
-            token_url = f"{state.current_base_url}/scan/{state.current_token}"
-            payload = {
-                "type": "token",
-                "token": state.current_token,
-                "expiresAt": state.expires_at,
-                "qr": make_qr_data_uri(token_url),
-            }
+            token = state.current_token or next(reversed(state.active_tokens), None)
+            if token:
+                token_url = f"{state.current_base_url}/scan/{token}"
+                payload = {
+                    "type": "token",
+                    "token": token,
+                    "expiresAt": state.active_tokens.get(token, state.expires_at),
+                    "qr": make_qr_data_uri(token_url),
+                }
+            else:
+                payload = rotate_token(state.current_base_url)
             yield f"data: {to_json(payload)}\n\n"
             while True:
                 event = await queue.get()

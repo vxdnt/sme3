@@ -1,17 +1,20 @@
 // ── 1. Read URL Parameters & Cache ──
     const params = new URLSearchParams(window.location.search);
+    let userTicketId = (params.get('ticket_id') || '').trim();
     let userEmail = (params.get('email') || '').trim();
     let userName = (params.get('name') || '').trim();
     let userQty = (params.get('qty') || '').trim();
     let userCat = (params.get('cat') || params.get('category') || '').trim();
     const urlToken = (params.get('token') || '').trim();
 
-    if (userEmail) {
-      localStorage.setItem('ticket_email', userEmail);
+    if (userTicketId) {
+      localStorage.setItem('ticket_id', userTicketId);
+      if (userEmail) localStorage.setItem('ticket_email', userEmail);
       if (userName) localStorage.setItem('ticket_name', userName);
       if (userQty) localStorage.setItem('ticket_qty', userQty);
       if (userCat) localStorage.setItem('ticket_category', userCat);
     } else {
+      userTicketId = localStorage.getItem('ticket_id') || '';
       userEmail = localStorage.getItem('ticket_email') || 'attendee@example.com';
       userName = localStorage.getItem('ticket_name') || 'Attendee Name';
       userQty = localStorage.getItem('ticket_qty') || '1';
@@ -21,6 +24,7 @@
     const ticket = {
       attendeeName: userName || 'Attendee Name',
       email: userEmail || 'attendee@example.com',
+      ticketId: userTicketId || '1110/unknown',
       quantity: userQty || '1',
       category: userCat || 'Male Stag',
       eventName: 'Big Fat Indian Scam Sangeet',
@@ -36,7 +40,7 @@
     document.getElementById('eventTime').textContent = ticket.time;
     document.getElementById('eventLocation').innerHTML = '<a href="https://maps.app.goo.gl/PEXN9a42ppobr7sv7" target="_blank" style="color:inherit;text-decoration:underline;text-underline-offset:2px;display:inline-flex;align-items:center;gap:4px;"><span>' + ticket.location + '</span><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75em;opacity:0.85;"></i></a>';
     document.getElementById('attendeeName').textContent = ticket.attendeeName;
-    document.getElementById('attendeeEmail').textContent = ticket.email;
+    document.getElementById('attendeeEmail').textContent = 'Ticket ID: ' + ticket.ticketId;
     document.getElementById('ticketQty').textContent = ticket.quantity;
     document.getElementById('ticketCategory').textContent = ticket.category;
 
@@ -82,14 +86,23 @@
 
     // ── 2. Check initial attendee status from backend ──
     async function fetchAttendeeStatus() {
-      if (!ticket.email || ticket.email === 'attendee@example.com') return;
+      if (!ticket.ticketId || ticket.ticketId === '1110/unknown') return;
       try {
-        const res = await fetch('/api/attendee?email=' + encodeURIComponent(ticket.email));
+        const query = new URLSearchParams({ ticket_id: ticket.ticketId });
+        if (urlToken) query.set('token', urlToken);
+        const res = await fetch('/api/attendee?' + query.toString());
         if (!res.ok) return;
         const data = await res.json();
         if (data.ok && data.attendee) {
           if (data.attendee.name) {
             document.getElementById('attendeeName').textContent = data.attendee.name;
+          }
+          if (data.attendee.email) {
+            ticket.email = data.attendee.email;
+          }
+          if (data.attendee.ticket_id) {
+            ticket.ticketId = data.attendee.ticket_id;
+            document.getElementById('attendeeEmail').textContent = 'Ticket ID: ' + ticket.ticketId;
           }
           if (data.attendee.quantity) {
             document.getElementById('ticketQty').textContent = data.attendee.quantity;
@@ -108,7 +121,7 @@
     fetchAttendeeStatus();
 
     // ── 3. Handle direct /scan/<token> redirect ──
-    if (urlToken && ticket.email && ticket.email !== 'attendee@example.com') {
+    if (urlToken && ticket.ticketId && ticket.ticketId !== '1110/unknown') {
       processCheckIn(urlToken);
     }
 
@@ -194,10 +207,12 @@
       scannerStatus.textContent = 'Verifying check-in…';
 
       try {
+        const payload = { token: token, ticket_id: ticket.ticketId, email: ticket.email };
+        if (urlToken) payload.token = urlToken;
         const res = await fetch('/api/checkin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: token, email: ticket.email })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
 

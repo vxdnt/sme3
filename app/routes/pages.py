@@ -44,6 +44,11 @@ async def checkin_page():
     return _html_page("check-in.html")
 
 
+@router.get("/organizer/attendees", response_class=HTMLResponse)
+async def organizer_attendees_page():
+    return _html_page("attendees.html")
+
+
 @router.get("/ticket", response_class=HTMLResponse)
 async def ticket_page():
     return _html_page("ticket.html")

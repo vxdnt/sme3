@@ -42,7 +42,7 @@ def send_ticket_email(to_email: str, name: str, ticket_url: str, quantity: int, 
 
         <tr>
           <td>
-            <img src="{flyer_url}" alt="Event Flyer" class="hero-img" width="520" style="display:block; width:100%; max-width:100%; height:340px; object-fit:cover;">
+            <img src="{flyer_url}" alt="Event Flyer" class="hero-img" width="520" style="display:block; width:100%; max-width:100%; height:300px; object-fit:cover;">
         </tr>
 
         <tr>
